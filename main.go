@@ -12,5 +12,5 @@ func main() {
 	router := NewRouter()
 
 	//Log server interactions (Get, Post, etc)
-	log.Fatal(http.ListenAndServe(":8006", router))
+	log.Fatal(http.ListenAndServe(":8096", router))
 }

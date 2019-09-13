@@ -10,7 +10,7 @@ import (
 //index returns the index.html file used for testing the REST API
 func index(w http.ResponseWriter, r *http.Request) {
 	var urlPath string
-	urlPath, _ = filepath.Abs("./static/index.htm")
+	urlPath, _ = filepath.Abs("./static/index.html")
 	//urlPath, _ = filepath.Abs("./static/index.html")
 	http.ServeFile(w, r, urlPath)
 }
