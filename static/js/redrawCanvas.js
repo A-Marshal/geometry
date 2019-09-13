@@ -1,10 +1,10 @@
 function drawImage(imageObj) {
     var canvas = document.getElementById('canvas');
     var context = canvas.getContext('2d');
-    var x = 0;
-    var y = 0;
+    var x = 300;
+    var y = 160;
 
-    context.drawImage(imageObj, -250, -50);
+    context.drawImage(imageObj, 0, 0, x, y);
 
     var imageData = context.getImageData(0, 0, 640, 480);
     var data = imageData.data;
@@ -20,5 +20,5 @@ function drawImage(imageObj) {
     }
 
     // overwrite original image
-    context.putImageData(imageData, x, y);
+    context.putImageData(imageData, 0, 0);
   }
