@@ -17,22 +17,18 @@
         }
 
         #videoElement {
-            width: 640px;
-            height: 480px;
             background-color: #666;
         }
 
         #canvas {
-            width: 640px;
-            height: 480px;
             background-color: #666;
         }
     </style>
 </head>
 
 <body>
-    <video autoplay="true" id="videoElement"></video>
-    <canvas id="canvas"></canvas>
+    <video autoplay="true" id="videoElement" width="640" height="480"></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
         var video = document.querySelector("#videoElement");
