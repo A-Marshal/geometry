@@ -65,6 +65,6 @@ function drawImage(imageObj) {
   context.stroke();
   //And som'aaahh text'aaahhh
   myFnjockoMessage = "Img. width: " + x + " px; Img. height: " + y + " px";
-  ctx.font = "20px Georgia";
-  ctx.fillText(myFnjockoMessage, 10, 50);
+  context.font = "20px Georgia";
+  context.fillText(myFnjockoMessage, 10, 50);
 }
