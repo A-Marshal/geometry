@@ -38,7 +38,6 @@
             var video = document.getElementById('webcam');
             var canvas = document.getElementById('canvas');
 
-
             //Vi försöker sätte upp videoa
             if (navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: true })
@@ -46,7 +45,7 @@
                         video.srcObject = stream;
                         //test
                         webCamFeed(video);
-                        //onDimensionsReady(640, 480);
+                        onDimensionsReady(640, 480);
                         //test
                     })
                     .catch(function (error) {
@@ -60,66 +59,16 @@
                 compatibility.requestAnimationFrame(tick);
             };
 
-            /*
-            try {
-                var attempts = 0;
-                var readyListener = function (event) {
-                    findVideoSize();
-                };
-                var findVideoSize = function () {
-                    if (video.videoWidth > 0 && video.videoHeight > 0) {
-                        video.removeEventListener('loadeddata', readyListener);
-                        onDimensionsReady(video.videoWidth, video.videoHeight);
-                    } else {
-                        if (attempts < 10) {
-                            attempts++;
-                            setTimeout(findVideoSize, 200);
-                        } else {
-                            onDimensionsReady(640, 480);
-                        }
-                    }
-                };
-                var onDimensionsReady = function (width, height) {
-                    demo_app(width, height);
-                    //compatibility.requestAnimationFrame(tick);
-                };
-
-                video.addEventListener('loadeddata', readyListener);
-            
-                compatibility.getUserMedia({ video: true }, function (stream) {
-                    try {
-                        video.src = compatibility.URL.createObjectURL(stream);
-                    } catch (error) {
-                        video.src = stream;
-                    }
-                    setTimeout(function () {
-                        video.srcObject = stream;
-                        //video.play();
-                    }, 500);
-                }, function (error) {
-                    $('#canvas').hide();
-                    $('#log').hide();
-                    $('#no_rtc').html('<h4>WebRTC not available.</h4>');
-                    $('#no_rtc').show();
-                });
-            } catch (error) {
-                $('#canvas').hide();
-                $('#log').hide();
-                $('#no_rtc').html('<h4>Something goes wrong...</h4>');
-                $('#no_rtc').show();
-            }
-            */
-
-
-
 
             var stat = new profiler();
 
             var gui, options, ctx, canvasWidth, canvasHeight;
-            var img_u8, corners, threshold;
+            var img_u8;
 
             var demo_opt = function () {
-                this.threshold = 20;
+                this.blur_radius = 2;
+                this.low_threshold = 20;
+                this.high_threshold = 50;
             }
 
             function demo_app(videoWidth, videoHeight) {
@@ -130,25 +79,18 @@
                 ctx.fillStyle = "rgb(0,255,0)";
                 ctx.strokeStyle = "rgb(0,255,0)";
 
-                img_u8 = new jsfeat.matrix_t(640, 480, jsfeat.U8_t | jsfeat.C1_t);
-
-                corners = [];
-                var i = 640 * 480;
-                while (--i >= 0) {
-                    corners[i] = new jsfeat.keypoint_t(0, 0, 0, 0);
-                }
-
-                threshold = 20;
-
-                jsfeat.fast_corners.set_threshold(threshold);
+                img_u8 = new jsfeat.matrix_t(640, 480, jsfeat.U8C1_t | jsfeat.C1_t);
 
                 options = new demo_opt();
                 gui = new dat.GUI();
 
-                gui.add(options, 'threshold', 5, 100).step(1);
+                gui.add(options, 'blur_radius', 0, 4).step(1);
+                gui.add(options, 'low_threshold', 1, 127).step(1);
+                gui.add(options, 'high_threshold', 1, 127).step(1);
 
                 stat.add("grayscale");
-                stat.add("fast corners");
+                stat.add("gauss blur");
+                stat.add("canny edge");
             }
 
             function tick() {
@@ -162,36 +104,29 @@
                     jsfeat.imgproc.grayscale(imageData.data, 640, 480, img_u8);
                     stat.stop("grayscale");
 
-                    if (threshold != options.threshold) {
-                        threshold = options.threshold | 0;
-                        jsfeat.fast_corners.set_threshold(threshold);
-                    }
+                    var r = options.blur_radius | 0;
+                    var kernel_size = (r + 1) << 1;
 
-                    stat.start("fast corners");
-                    var count = jsfeat.fast_corners.detect(img_u8, corners, 5);
-                    stat.stop("fast corners");
+                    stat.start("gauss blur");
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    stat.stop("gauss blur");
+
+                    stat.start("canny edge");
+                    jsfeat.imgproc.canny(img_u8, img_u8, options.low_threshold | 0, options.high_threshold | 0);
+                    stat.stop("canny edge");
 
                     // render result back to canvas
                     var data_u32 = new Uint32Array(imageData.data.buffer);
-                    render_corners(corners, count, data_u32, 640);
+                    var alpha = (0xff << 24);
+                    var i = img_u8.cols * img_u8.rows, pix = 0;
+                    while (--i >= 0) {
+                        pix = img_u8.data[i];
+                        data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+                    }
 
                     ctx.putImageData(imageData, 0, 0);
 
                     $('#log').html(stat.log());
-                }
-            }
-
-            function render_corners(corners, count, img, step) {
-                var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00;
-                for (var i = 0; i < count; ++i) {
-                    var x = corners[i].x;
-                    var y = corners[i].y;
-                    var off = (x + y * step);
-                    img[off] = pix;
-                    img[off - 1] = pix;
-                    img[off + 1] = pix;
-                    img[off - step] = pix;
-                    img[off + step] = pix;
                 }
             }
 
