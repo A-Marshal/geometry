@@ -46,7 +46,7 @@
                         video.srcObject = stream;
                         //test
                         webCamFeed(video);
-                        demo_app(640, 480);
+                        onDimensionsReady(640, 480);
                         //test
                     })
                     .catch(function (error) {
@@ -55,6 +55,10 @@
             }
 
 
+            var onDimensionsReady = function (width, height) {
+                demo_app(width, height);
+                compatibility.requestAnimationFrame(tick);
+            };
 
             /*
             try {
