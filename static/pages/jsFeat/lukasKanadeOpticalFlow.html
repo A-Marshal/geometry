@@ -145,10 +145,15 @@
             canvas.addEventListener('click', on_canvas_click, false);
 
             function draw_circle(ctx, x, y) {
+                var coordText = "";
                 ctx.beginPath();
                 ctx.arc(x, y, 4, 0, Math.PI * 2, true);
                 ctx.closePath();
                 ctx.fill();
+                //Då tester vi o skrifve ut coordinata osså
+                coordText = "X: " + x.toFixed(2) + "; Y: " + y.toFixed(2) +";";
+                ctx.font = "16px Georgia";
+                ctx.fillText(coordText, x + 3, y - 3);
             }
 
             function prune_oflow_points(ctx) {
