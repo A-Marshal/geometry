@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta content="stuff, to, help, search, engines, not" name="keywords">
+    <meta content="What this page is about." name="description">
+    <meta content="Display Webcam Stream" name="title">
+    <title>Display FAST points in the centre</title>
+
+    <style>
+        #container {
+            margin: 0px auto;
+            width: 640px;
+            height: 480px;
+            border: 10px #333 solid;
+        }
+
+        #videoElement {
+            background-color: #666;
+        }
+
+        #canvas {
+            background-color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <video autoplay="true" id="videoElement" width="640" height="480"></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
+    <div id="log" class="alert alert-info"></div>
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/compatibility.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/profiler.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
+
+    <script type="text/javascript">
+
+        var video = document.querySelector("#videoElement");
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+
+        //FAST corner ROI
+        var xCentre = 320;
+        var yCentre = 240;
+        var roiWidth = 150;
+
+        $(window).load(function () {
+            "use strict";
+
+
+            if (navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        onDimensionsReady(640, 480);
+                    })
+                    .catch(function (error) {
+                        console.log("Something went wrong!");
+                    });
+            }
+
+            //här ska vi då fnjöla in anrop té FAST? Typ
+
+
+            var onDimensionsReady = function (width, height) {
+                demo_app(width, height);
+                compatibility.requestAnimationFrame(tick);
+            };
+
+            var stat = new profiler();
+
+            var gui, options, ctx, canvasWidth, canvasHeight;
+            var img_u8, corners, threshold;
+
+            var demo_opt = function () {
+                this.threshold = 20;
+            }
+
+            function demo_app(videoWidth, videoHeight) {
+                canvasWidth = canvas.width;
+                canvasHeight = canvas.height;
+                ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = "rgb(0,255,0)";
+                ctx.strokeStyle = "rgb(0,255,0)";
+
+                img_u8 = new jsfeat.matrix_t(roiWidth, roiWidth, jsfeat.U8_t | jsfeat.C1_t);
+
+                corners = [];
+                var i = roiWidth * roiWidth;
+                while (--i >= 0) {
+                    corners[i] = new jsfeat.keypoint_t(0, 0, 0, 0);
+                }
+
+                threshold = 20;
+
+                jsfeat.fast_corners.set_threshold(threshold);
+
+                options = new demo_opt();
+                gui = new dat.GUI();
+
+                gui.add(options, 'threshold', 5, 100).step(1);
+
+                stat.add("grayscale");
+                stat.add("fast corners");
+            }
+
+            function tick() {
+                compatibility.requestAnimationFrame(tick);
+                stat.new_frame();
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    //test
+
+                    var imageData = ctx.getImageData(xCentre - roiWidth/2, yCentre - roiWidth/2, roiWidth, roiWidth);
+
+                    stat.start("grayscale");
+                    jsfeat.imgproc.grayscale(imageData.data, roiWidth, roiWidth, img_u8);
+                    stat.stop("grayscale");
+
+                    if (threshold != options.threshold) {
+                        threshold = options.threshold | 0;
+                        jsfeat.fast_corners.set_threshold(threshold);
+                    }
+
+                    stat.start("fast corners");
+                    var count = jsfeat.fast_corners.detect(img_u8, corners, 5);
+                    stat.stop("fast corners");
+
+                    // render result back to canvas
+                    var data_u32 = new Uint32Array(imageData.data.buffer);
+                    render_corners(corners, count, data_u32, roiWidth);
+
+                    ctx.putImageData(imageData, xCentre - roiWidth/2, yCentre - roiWidth/2);
+
+                    //And we giveth santa moose noses all over
+                    ctx.fillStyle = "rgb(0,0,0)";
+                    ctx.strokeStyle = "rgb(0,0,0)";
+                    ctx.beginPath();
+                    ctx.arc(320, 240, 100, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(320, 240, 150, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    //And som'aaahh text'aaahhh
+                    var myFnjockoMessage = "";
+                    myFnjockoMessage = "Img. width: 640" + " px; Img. height: 480 px";
+                    ctx.font = "20px Georgia";
+                    ctx.fillText(myFnjockoMessage, 10, 50);
+                    ctx.fillStyle = "rgb(0,255,0)";
+                    ctx.strokeStyle = "rgb(0,255,0)";
+
+
+                    $('#log').html(stat.log());
+                }
+            }
+
+            function render_corners(corners, count, img, step) {
+                var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00;
+                for (var i = 0; i < count; ++i) {
+                    var x = corners[i].x;
+                    var y = corners[i].y;
+                    var off = (x + y * step);
+                    img[off] = pix;
+                    img[off - 1] = pix;
+                    img[off + 1] = pix;
+                    img[off - step] = pix;
+                    img[off + step] = pix;
+                }
+            }
+
+            $(window).unload(function () {
+                video.pause();
+                video.src = null;
+            });
+        });
+        //här ska vi då fnjöla in anrop té FAST? Typ
+
+
+        //Mine fonktione
+        var myVar = setInterval(intervalTimer, 100);
+
+        function intervalTimer() {
+            ctx.clearRect(0, 0, 640, 480);
+            //ctx.drawImage(video,0,0,300,160);
+            drawImage(video);
+        }
+
+//var data = ctx.getImageData(0, 0, w, h).data;
+    </script>
+    <script type="text/javascript"
+        src="../../../js/inspirit-jsfeat-4c7b336/minaFeatJSFnjollerialor/fastCentrePoints.js"></script>
+</body>
+
+</html>

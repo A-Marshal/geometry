@@ -30,9 +30,8 @@
     <script type="text/javascript" src="../../js/inspirit-jsfeat-4c7b336/src/profiler.js"></script>
     <script type="text/javascript" src="../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
     <script type="text/javascript">
-
+        "use strict";
         $(window).load(function () {
-            "use strict";
 
             // lets do some fun
             var video = document.getElementById('webcam');
@@ -59,59 +58,6 @@
                 demo_app(width, height);
                 compatibility.requestAnimationFrame(tick);
             };
-
-            /*
-            try {
-                var attempts = 0;
-                var readyListener = function (event) {
-                    findVideoSize();
-                };
-                var findVideoSize = function () {
-                    if (video.videoWidth > 0 && video.videoHeight > 0) {
-                        video.removeEventListener('loadeddata', readyListener);
-                        onDimensionsReady(video.videoWidth, video.videoHeight);
-                    } else {
-                        if (attempts < 10) {
-                            attempts++;
-                            setTimeout(findVideoSize, 200);
-                        } else {
-                            onDimensionsReady(640, 480);
-                        }
-                    }
-                };
-                var onDimensionsReady = function (width, height) {
-                    demo_app(width, height);
-                    //compatibility.requestAnimationFrame(tick);
-                };
-
-                video.addEventListener('loadeddata', readyListener);
-            
-                compatibility.getUserMedia({ video: true }, function (stream) {
-                    try {
-                        video.src = compatibility.URL.createObjectURL(stream);
-                    } catch (error) {
-                        video.src = stream;
-                    }
-                    setTimeout(function () {
-                        video.srcObject = stream;
-                        //video.play();
-                    }, 500);
-                }, function (error) {
-                    $('#canvas').hide();
-                    $('#log').hide();
-                    $('#no_rtc').html('<h4>WebRTC not available.</h4>');
-                    $('#no_rtc').show();
-                });
-            } catch (error) {
-                $('#canvas').hide();
-                $('#log').hide();
-                $('#no_rtc').html('<h4>Something goes wrong...</h4>');
-                $('#no_rtc').show();
-            }
-            */
-
-
-
 
             var stat = new profiler();
 
