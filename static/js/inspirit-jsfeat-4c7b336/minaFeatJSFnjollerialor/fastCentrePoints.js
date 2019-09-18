@@ -21,21 +21,21 @@ function drawImage(imageObj) {
       }
   
       //Calculate grey level RBG values
-      if ((j % x < 3 * x / 4) && (rowCounter < y / 2)) {
+      if ((j % x < x / 4) && (rowCounter < y)) {
         // red
         data[i] = brightness;
         // green
         data[i + 1] = 0.5 * brightness;
         // blue
         data[i + 2] = 0;//brightness;
-      } else if ((j % x >= x / 2) && (rowCounter < y / 2)) {
+      } else if ((j % x >= 3 * x / 4) && (rowCounter < y)) {
         // red
         data[i] = brightness;
         // green
         data[i + 1] = 0;//brightness;
         // blue
         data[i + 2] = 0.5 * brightness;
-      } else if ((j % x < x / 4) && (rowCounter >= y / 2)) {
+      } else if ((j % x >= 4) && (j % x < 3 * x / 4) && (rowCounter >= y / 2)) {
         // red
         data[i] = 0;//brightness;
         // green

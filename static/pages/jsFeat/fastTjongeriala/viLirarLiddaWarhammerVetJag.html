@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Droid+Sans:regular,bold|Inconsolata|PT+Sans:400,700">
+    <link rel="stylesheet" href="../../../css/bootstrap.css">
+    <link rel="stylesheet" href="../../../css/jsfeat.css">
+    <link rel="stylesheet" type="text/css" href="../../../css/base.css">
+    <style>
+        canvas {
+            border: 1px solid #d3d3d3;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+
+        video {
+            border: 1px solid #d3d3d3;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+    </style>
+</head>
+
+<body onload="startGame()">
+    <div class="row">
+        <div id="drawContainer" class="column70">
+            <video autoplay="true" id="webcam" width="850" height="600" style="display:none;"></video>
+            <div style=" width:850px;height:600px;margin: 10px auto;">
+                <canvas id="imageView" width="850" height="600">
+                    <p>Unfortunately, your browser is currently unsupported by our web
+                        application. We are sorry for the inconvenience. Please use one of the
+                        supported browsers listed below, or draw the image you want using an
+                        offline tool.</p>
+                    <p>Supported browsers: <a href="http://www.opera.com">Opera</a>, <a
+                            href="http://www.mozilla.com">Firefox</a>, <a href="http://www.apple.com/safari">Safari</a>,
+                        and
+                        <a href="http://www.konqueror.org">Konqueror</a>.</p>
+                </canvas>
+
+                <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
+                <div id="log" class="alert alert-info"></div>
+            </div>
+        </div>
+        <div class="column30">
+            <p><label>Drawing tool: <select id="dtool">
+                        <option value="line">Line</option>
+                        <option value="horizontal line">Horizontal line</option>
+                        <option value="vertical line">Vertical line</option>
+                        <option value="rect">Rectangle</option>
+                        <option value="pencil">Pencil</option>
+                    </select></label></p>
+            <br>
+            <button id="stateMachine" type="button" class="button" onClick="stateMachine()">Initial setup</button>
+            <p id="helper">Start game</p>
+            <br>
+            <form>
+                <label>Move: <input type="radio" name="unit" id="unit1" checked>U1
+                    <input type="radio" name="unit" id="unit2">U2
+                    <input type="radio" name="unit" id="unit3">U3
+                    <input type="radio" name="unit" id="unit4">U4
+                    <input type="radio" name="unit" id="unit5">O1
+                    <input type="radio" name="unit" id="unit6">O2
+                    <input type="radio" name="unit" id="unit7">O3
+                    <input type="radio" name="unit" id="unit8">O4</label>
+            </form>
+            <button id="moveUnitReset" type="button" class="buttonSmall" onclick="resetUnitMove()">Reset</button>
+            <button id="moveUnitEnter" type="button" class="buttonSmall" onclick="enterUnitMove()">Enter</button>
+            <br>
+            <form>
+                <label>U unit for dist calc: <input type="radio" name="unitU" id="unitU1" onchange="updateUnitInfo()"
+                        checked>U1
+                    <input type="radio" name="unitU" id="unitU2" onchange="updateUnitInfo()">U2
+                    <input type="radio" name="unitU" id="unitU3" onchange="updateUnitInfo()">U3
+                    <input type="radio" name="unitU" id="unitU4" onchange="updateUnitInfo()">U4</label>
+            </form>
+            <button id="chosenUnitUDistReset" type="button" class="buttonSmall">Reset</button>
+            <button id="chosenUnitUDistEnter" type="button" class="buttonSmall">Enter</button>
+            <br>
+            <form>
+                <label>O unit for dist calc: <input type="radio" name="unitO" id="unitO1" onchange="updateUnitInfo()"
+                        checked>U1
+                    <input type="radio" name="unitO" id="unitO2" onchange="updateUnitInfo()">U2
+                    <input type="radio" name="unitO" id="unitO3" onchange="updateUnitInfo()">U3
+                    <input type="radio" name="unitO" id="unitO4" onchange="updateUnitInfo()">U4</label>
+            </form>
+            <button id="chosenUnitODistReset" type="button" class="buttonSmall">Reset</button>
+            <button id="chosenUnitODistEnter" type="button" class="buttonSmall">Enter</button>
+            <br>
+            <p id="mouseCoord"></p>
+            <p id="debugVal"></p>
+        </div>
+    </div>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/compatibility.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/profiler.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
+    <script type="text/javascript">
+        "use strict";
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        $(window).load(function () {
+
+            // lets do some fun
+            var video = document.getElementById('webcam');
+            var canvas = document.getElementById('imageView');
+
+
+            //Vi försöker sätte upp videoa
+            if (navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        //test
+                        webCamFeed(video);
+                        onDimensionsReady(850, 600);
+                        //test
+                    })
+                    .catch(function (error) {
+                        console.log("Something went wrong!");
+                    });
+            }
+
+
+            var onDimensionsReady = function (width, height) {
+                demo_app(width, height);
+                compatibility.requestAnimationFrame(tick);
+            };
+
+            var stat = new profiler();
+
+            var gui, options, ctx, canvasWidth, canvasHeight;
+            var img_u8, corners, threshold;
+
+            var demo_opt = function () {
+                this.threshold = 14;
+            }
+
+            function demo_app(videoWidth, videoHeight) {
+                canvasWidth = canvas.width;
+                canvasHeight = canvas.height;
+                ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = "rgb(0,255,0)";
+                ctx.strokeStyle = "rgb(0,255,0)";
+
+                img_u8 = new jsfeat.matrix_t(640, 480, jsfeat.U8_t | jsfeat.C1_t);
+
+                corners = [];
+                var i = 640 * 480;
+                while (--i >= 0) {
+                    corners[i] = new jsfeat.keypoint_t(0, 0, 0, 0);
+                }
+
+                threshold = 14;
+
+                jsfeat.fast_corners.set_threshold(threshold);
+
+                options = new demo_opt();
+                gui = new dat.GUI();
+
+                gui.add(options, 'threshold', 5, 100).step(1);
+
+                stat.add("grayscale");
+                stat.add("fast corners");
+            }
+
+            function tick() {
+                compatibility.requestAnimationFrame(tick);
+                stat.new_frame();
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    ctx.drawImage(video, 140, 50, 640, 480);
+                    var imageData = ctx.getImageData(140, 50, 640, 480);
+
+                    stat.start("grayscale");
+                    jsfeat.imgproc.grayscale(imageData.data, 640, 480, img_u8);
+                    stat.stop("grayscale");
+
+                    if (threshold != options.threshold) {
+                        threshold = options.threshold | 0;
+                        jsfeat.fast_corners.set_threshold(threshold);
+                    }
+
+                    stat.start("fast corners");
+                    var count = jsfeat.fast_corners.detect(img_u8, corners, 5);
+                    stat.stop("fast corners");
+
+                    // render result back to canvas
+                    var data_u32 = new Uint32Array(imageData.data.buffer);
+                    render_corners(corners, count, data_u32, 640);
+
+                    ctx.putImageData(imageData, 140, 50);
+
+                    $('#log').html(stat.log());
+                }
+            }
+
+            function render_corners(corners, count, img, step) {
+                var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00;
+                for (var i = 0; i < count; ++i) {
+                    var x = corners[i].x;
+                    var y = corners[i].y;
+                    var off = (x + y * step);
+                    img[off] = pix;
+                    img[off - 1] = pix;
+                    img[off + 1] = pix;
+                    img[off - step] = pix;
+                    img[off + step] = pix;
+                }
+            }
+
+            $(window).unload(function () {
+                video.pause();
+                video.src = null;
+            });
+        });
+
+        //mine fonketione
+        function webCamFeed(video) {
+            setInterval(function () {
+                var canvas = document.getElementById('imageView');
+                var ctxx = canvas.getContext("2d");
+                ctxx.drawImage(video, 140, 50, 640, 480);
+            }, 100);
+        }
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+        //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
+
+        var myGamePiece = [];
+        var i, j;
+        var unitToMove = 0;
+        var unitUDistCalc = 0;
+        var unitODistCalc = 0;
+
+        var textUnitInfo = "";
+        var textGameInfo = "";
+        var ctxW40K;
+
+        function startGame() {
+            //Create ultraviolets
+            for (i = 0; i < 4; i++) {
+                myGamePiece.push(new component(80, 40, "blueviolet", 190 + i * 180, 125, 10, "U" + (i + 1)));
+            }
+            //Create th'aaahhh oth'aaahhhsss
+            for (i = 0; i < 4; i++) {
+                myGamePiece.push(new component(80, 40, "red", 190 + i * 180, 480, 10, "O" + (i + 1)));
+            }
+            myGameArea.start();
+        }
+
+        //The gaming area is an object holdin' some properties and methods (functions...?)
+        var myGameArea = {
+            canvas: document.createElement("canvas"),
+            start: function () {
+                this.canvas.id = "rockBottom";
+                this.canvas.width = 900;
+                this.canvas.height = 600;
+                this.context = this.canvas.getContext("2d");
+
+                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                this.frameNo = 0;
+                this.interval = setInterval(updateGameArea, 50);
+                window.addEventListener('keydown', function (e) {
+                    e.preventDefault();
+                    myGameArea.keys = (myGameArea.keys || []);
+                    myGameArea.keys[e.keyCode] = (e.type == "keydown");
+                })
+                window.addEventListener('keyup', function (e) {
+                    myGameArea.keys[e.keyCode] = (e.type == "keydown");
+                })
+            },
+            stop: function () {
+                clearInterval(this.interval);
+            },
+            clear: function () {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+
+        //What the fnjock is this? Another object, with properties and methods?
+        function component(width, height, color, x, y, unitMembers, unitDesignation, type) {
+
+            this.type = type;
+            //Geometry properties
+            this.width = width;
+            this.height = height;
+            this.speed = 0;
+            this.angle = 0;
+            this.moveAngle = 0;
+            this.x = x;
+            this.y = y;
+            //Unit properties
+            this.unitMembers = unitMembers;
+            this.unitDesignation = unitDesignation;
+            this.chosenToMove = false;
+            this.chosenForDistCalc = false;
+            this.oldX = 0;
+            this.oldY = 0;
+            //Game phase properties
+            this.movePhase = false;
+            this.psychPhase = false;
+            this.shootPhase = false;
+
+            //This here is a method of object "component"?
+            this.update = function () {
+                ctxW40K = myGameArea.context;
+                ctxW40K.save();
+                ctxW40K.translate(this.x, this.y);
+                ctxW40K.rotate(this.angle);
+                ctxW40K.fillStyle = color;
+                ctxW40K.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+
+                //Create direction line for the unit
+                ctxW40K.moveTo(0, 10);
+                ctxW40K.lineTo(0, -30);
+                ctxW40K.stroke();
+                ctxW40K.fillStyle = "#000000";
+                ctxW40K.font = "20px Arial";
+                ctxW40K.fillText(this.unitDesignation, 10, 15);
+                ctxW40K.restore();
+
+                //Markera vilken enhet som är i fokus
+                if (this.chosenToMove) {
+                    ctxW40K.beginPath();
+                    ctxW40K.arc(this.x, this.y, 8, 0, 2 * Math.PI);
+                    ctxW40K.fillStyle = "green";
+                    ctxW40K.fill();
+                }
+
+                //Markera mellan vilka enheter avstånd mäts
+                if (this.chosenForDistCalc) {
+                    ctxW40K.beginPath();
+                    ctxW40K.arc(this.x, this.y, 44, 0, 2 * Math.PI);
+                    ctxW40K.stroke();
+
+                }
+
+            }
+
+            //This here is a method of object "component"?
+            this.newPos = function () {
+                this.angle += this.moveAngle * Math.PI / 180;
+
+                //Calculate direction vehicle is moving in degrees
+                var direction = this.angle * 180 / Math.PI % 360;
+
+                //Bounce off left side of canvas
+                if (this.x < 5 && (direction < 180 || direction < -180)) {
+                    this.speed = 15;
+                }
+                if (this.x < 5 && (direction > 180 || (direction < 0 && direction > -180))) {
+                    this.speed = -15;
+                }
+                //Bounce off right side of canvas
+                if (this.x > 995 && (direction < 180 || direction < -180)) {
+                    this.speed = -15;
+                }
+                if (this.x > 995 && (direction > 180 || (direction < 0 && direction > -180))) {
+                    this.speed = 15;
+                }
+
+                //Bounce off top side of canvas
+                //No going forward against top
+                if (this.y < 5 && (direction >= 0 && (direction > 270 || direction < 90))) {
+                    this.speed = -15;
+                }
+                if (this.y < 5 && (direction < 0 && (direction < -270 || direction > -90))) {
+                    this.speed = -15;
+                }
+                //No going backwards against top
+                if (this.y < 5 && (direction >= 0 && (direction > 90 && direction < 270))) {
+                    this.speed = 15;
+                }
+                if (this.y < 5 && (direction < 0 && (direction > -270 && direction < -90))) {
+                    this.speed = 15;
+                }
+
+                //Bounce off bottom side of canvas
+                //No going forward against bottom
+                if (this.y > 645 && (direction >= 0 && (direction > 270 || direction < 90))) {
+                    this.speed = 15;
+                }
+                if (this.y > 645 && (direction < 0 && (direction < -270 || direction > -90))) {
+                    this.speed = 15;
+                }
+                //No going backwards against bottom
+                if (this.y > 645 && (direction >= 0 && (direction > 90 && direction < 270))) {
+                    this.speed = -15;
+                }
+                if (this.y > 645 && (direction < 0 && (direction > -270 && direction < -90))) {
+                    this.speed = -15;
+                }
+
+                //Move vehicle
+                this.x += this.speed * Math.sin(this.angle);
+                this.y -= this.speed * Math.cos(this.angle);
+            }
+        }
+
+        //And then back to a function, again...
+        function updateGameArea() {
+            myGameArea.clear();
+
+            //Draw outline of game area
+            ctxW40K = myGameArea.context;
+            ctxW40K.lineWidth = 2;
+            ctxW40K.fillStyle = "#D5C6BD";
+            ctxW40K.fillRect(100, 50, 720, 480);
+            ctxW40K.fillStyle = "#000000";
+            ctxW40K.strokeRect(100, 50, 720, 480);
+            ctxW40K.lineWidth = 1;
+            //Draw outline of game area(SLUT)
+
+            myGamePiece[0].moveAngle = 0;
+            myGamePiece[0].speed = 0;
+            myGamePiece[1].moveAngle = 0;
+            myGamePiece[1].speed = 0;
+            myGamePiece[2].moveAngle = 0;
+            myGamePiece[2].speed = 0;
+            myGamePiece[3].moveAngle = 0;
+            myGamePiece[3].speed = 0;
+            myGamePiece[4].moveAngle = 0;
+            myGamePiece[4].speed = 0;
+            myGamePiece[5].moveAngle = 0;
+            myGamePiece[5].speed = 0;
+            myGamePiece[6].moveAngle = 0;
+            myGamePiece[6].speed = 0;
+            myGamePiece[7].moveAngle = 0;
+            myGamePiece[7].speed = 0;
+
+            //Kolla av vilken liden sån därn tryckeknapper vi har intryckert
+            //Nollställ alla chosenToMove's
+            for (i = 0; i < 8; i++) {
+                myGamePiece[i].chosenToMove = false;
+            }
+
+            //Sätt rätt chosenToMove
+            if (document.getElementById("unit1").checked == true) {
+                unitToMove = 0;
+                myGamePiece[0].chosenToMove = true;
+            } else if (document.getElementById("unit2").checked == true) {
+                unitToMove = 1;
+                myGamePiece[1].chosenToMove = true;
+            } else if (document.getElementById("unit3").checked == true) {
+                unitToMove = 2;
+                myGamePiece[2].chosenToMove = true;
+            } else if (document.getElementById("unit4").checked == true) {
+                unitToMove = 3;
+                myGamePiece[3].chosenToMove = true;
+            } else if (document.getElementById("unit5").checked == true) {
+                unitToMove = 4;
+                myGamePiece[4].chosenToMove = true;
+            } else if (document.getElementById("unit6").checked == true) {
+                unitToMove = 5;
+                myGamePiece[5].chosenToMove = true;
+            } else if (document.getElementById("unit7").checked == true) {
+                unitToMove = 6;
+                myGamePiece[6].chosenToMove = true;
+            } else if (document.getElementById("unit8").checked == true) {
+                unitToMove = 7;
+                myGamePiece[7].chosenToMove = true;
+            }
+
+            if (myGameArea.keys && myGameArea.keys[37]) { myGamePiece[unitToMove].moveAngle = -5; }
+            if (myGameArea.keys && myGameArea.keys[39]) { myGamePiece[unitToMove].moveAngle = 5; }
+            if (myGameArea.keys && myGameArea.keys[38]) { myGamePiece[unitToMove].speed = 5; }
+            if (myGameArea.keys && myGameArea.keys[40]) { myGamePiece[unitToMove].speed = -5; }
+
+            //Uppdatera
+            myGamePiece[0].newPos();
+            myGamePiece[1].newPos();
+            myGamePiece[2].newPos();
+            myGamePiece[3].newPos();
+            myGamePiece[4].newPos();
+            myGamePiece[5].newPos();
+            myGamePiece[6].newPos();
+            myGamePiece[7].newPos();
+            myGamePiece[0].update();
+            myGamePiece[1].update();
+            myGamePiece[2].update();
+            myGamePiece[3].update();
+            myGamePiece[4].update();
+            myGamePiece[5].update();
+            myGamePiece[6].update();
+            myGamePiece[7].update();
+            updateUnitInfo();
+        }
+
+        function updateUnitInfo() {
+
+            //Write info to page
+            var dist = 0;
+            var text;
+            var unit = "U";
+            var unitModifier = 1;
+            var fontColour = "#00AA00"
+
+            //Beräkne riktning på enhet som för närvarande styrs
+            var angleGrad = myGamePiece[unitToMove].angle * 180 / Math.PI % 360;
+
+            //Kolla av vilken enheter som avstånd ska mätas mellan
+            //Nollställ alla chosenForDistCalc
+            for (i = 0; i < 8; i++) {
+                myGamePiece[i].chosenForDistCalc = false;
+            }
+
+            //Kolla av vilken U enhet vi ska räkna ud avstånd för
+            if (document.getElementById("unitU1").checked == true) {
+                unitUDistCalc = 0;
+                myGamePiece[0].chosenForDistCalc = true;
+            } else if (document.getElementById("unitU2").checked == true) {
+                unitUDistCalc = 1;
+                myGamePiece[1].chosenForDistCalc = true;
+            } else if (document.getElementById("unitU3").checked == true) {
+                unitUDistCalc = 2;
+                myGamePiece[2].chosenForDistCalc = true;
+            } else if (document.getElementById("unitU4").checked == true) {
+                unitUDistCalc = 3;
+                myGamePiece[3].chosenForDistCalc = true;
+            }
+
+            //Kolla av vilken O enhet vi ska räkna ud avstånd för
+            if (document.getElementById("unitO1").checked == true) {
+                unitODistCalc = 0 + 4;
+                myGamePiece[4].chosenForDistCalc = true;
+            } else if (document.getElementById("unitO2").checked == true) {
+                unitODistCalc = 1 + 4;
+                myGamePiece[5].chosenForDistCalc = true;
+            } else if (document.getElementById("unitO3").checked == true) {
+                unitODistCalc = 2 + 4;
+                myGamePiece[6].chosenForDistCalc = true;
+            } else if (document.getElementById("unitO4").checked == true) {
+                unitODistCalc = 3 + 4;
+                myGamePiece[7].chosenForDistCalc = true;
+            }
+
+            //Beräkne avstånd mellan enhetene o skrefte ud uppå siden
+            if (unitToMove > 3) {
+                unit = "O";
+                unitModifier = -3;
+            }
+            dist = Math.sqrt(Math.pow((myGamePiece[unitUDistCalc].x - myGamePiece[unitODistCalc].x), 2) + Math.pow((myGamePiece[unitUDistCalc].y - myGamePiece[unitODistCalc].y), 2));
+
+            if (dist > 240) {
+                fontColour = "#AA0000";
+            }
+
+            text = "Unit info: " + unit + (unitToMove + unitModifier);
+            text += "<br>Direction: " + angleGrad.toFixed(2);
+            text += "<br>Position x: " + myGamePiece[unitToMove].x.toFixed(2) + "<br>Position y: " + myGamePiece[unitToMove].y.toFixed(2);
+            text += "<br># of unit members: " + myGamePiece[unitToMove].unitMembers;
+            text += "<br>Distance between units U" + (unitUDistCalc + 1) + " and unit O" + (unitODistCalc + 1 - 4) + " is <font color=" + fontColour + ">" + dist.toFixed(2) + "</font>";
+            textUnitInfo = text;
+            text += textGameInfo;
+
+            //Debug nodes, d v s kolla av canvas id'n o hur de ligger ordnade internt
+
+            var myNodelist = document.getElementsByTagName("CANVAS");
+            for (i = 0; i < myNodelist.length; i++) {
+                text += "<br>Node ID: " + i + "; " + `"` + myNodelist[i].id + `"<br>`;
+            }
+
+            document.getElementById("debugVal").innerHTML = text;
+        }
+
+    </script>
+    <script type="text/javascript"
+        src="../../../js/inspirit-jsfeat-4c7b336/minaFeatJSFnjollerialor/testDraw.js"></script>
+    <script type="text/javascript"
+        src="../../../js/inspirit-jsfeat-4c7b336/minaFeatJSFnjollerialor/w40KStateMachine.js"></script>
+    <script type="text/javascript"
+        src="../../../js/inspirit-jsfeat-4c7b336/minaFeatJSFnjollerialor/w40KMovementPhase.js"></script>
+</body>
+
+</html>

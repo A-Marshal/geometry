@@ -65,7 +65,7 @@
             var img_u8, corners, threshold;
 
             var demo_opt = function () {
-                this.threshold = 20;
+                this.threshold = 14;
             }
 
             function demo_app(videoWidth, videoHeight) {
@@ -84,7 +84,7 @@
                     corners[i] = new jsfeat.keypoint_t(0, 0, 0, 0);
                 }
 
-                threshold = 20;
+                threshold = 14;
 
                 jsfeat.fast_corners.set_threshold(threshold);
 

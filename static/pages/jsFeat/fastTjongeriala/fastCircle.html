@@ -78,7 +78,7 @@
             var img_u8, corners, threshold;
 
             var demo_opt = function () {
-                this.threshold = 20;
+                this.threshold = 14;
             }
 
             function demo_app(videoWidth, videoHeight) {
@@ -97,7 +97,7 @@
                     corners[i] = new jsfeat.keypoint_t(0, 0, 0, 0);
                 }
 
-                threshold = 20;
+                threshold = 14;
 
                 jsfeat.fast_corners.set_threshold(threshold);
 
@@ -148,7 +148,7 @@
                     ctx.stroke();
                     //And som'aaahh text'aaahhh
                     var myFnjockoMessage = "";
-                    myFnjockoMessage = "Img. width: 640" + " px; Img. height: 480 px";
+                    myFnjockoMessage = "Img. width: 640" + " px; Img. height: 480 px; " + count * 1000 + " FAST points;";
                     ctx.font = "20px Georgia";
                     ctx.fillText(myFnjockoMessage, 10, 50);
                     ctx.fillStyle = "rgb(0,255,0)";
