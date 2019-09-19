@@ -217,4 +217,5 @@ if (window.addEventListener) {
     }, false);
   }
   
-      // vim:set spell spl=en fo=wan1croql tw=80 ts=2 sw=2 sts=2 sta et ai cin fenc=utf-8 ff=unix:  
+  //Test reorder Z's
+  reOrderZs();

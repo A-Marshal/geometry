@@ -30,6 +30,7 @@
         <div id="drawContainer" class="column70">
             <video autoplay="true" id="webcam" width="850" height="600" style="display:none;"></video>
             <div style=" width:850px;height:600px;margin: 10px auto;">
+                <canvas id="fastPoints" width="850" height="600"></canvas>
                 <canvas id="imageView" width="850" height="600">
                     <p>Unfortunately, your browser is currently unsupported by our web
                         application. We are sorry for the inconvenience. Please use one of the
@@ -111,7 +112,7 @@
 
             // lets do some fun
             var video = document.getElementById('webcam');
-            var canvas = document.getElementById('imageView');
+            var canvas = document.getElementById('fastPoints');
 
 
             //Vi försöker sätte upp videoa
@@ -226,7 +227,7 @@
         //mine fonketione
         function webCamFeed(video) {
             setInterval(function () {
-                var canvas = document.getElementById('imageView');
+                var canvas = document.getElementById('fastPoints');
                 var ctxx = canvas.getContext("2d");
                 ctxx.drawImage(video, 140, 50, 640, 480);
             }, 100);
@@ -269,7 +270,11 @@
                 this.canvas.height = 600;
                 this.context = this.canvas.getContext("2d");
 
-                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                document.body.insertBefore(this.canvas, document.body.childNodes[2]);
+                //test change canvas
+                //this.canvas.id = "fastPoints";
+                //this.context = this.canvas.getContext("2d");
+                //test change canvas
                 this.frameNo = 0;
                 this.interval = setInterval(updateGameArea, 50);
                 window.addEventListener('keydown', function (e) {
@@ -415,12 +420,12 @@
 
             //Draw outline of game area
             ctxW40K = myGameArea.context;
-            ctxW40K.lineWidth = 2;
-            ctxW40K.fillStyle = "#D5C6BD";
-            ctxW40K.fillRect(100, 50, 720, 480);
-            ctxW40K.fillStyle = "#000000";
-            ctxW40K.strokeRect(100, 50, 720, 480);
-            ctxW40K.lineWidth = 1;
+            //ctxW40K.lineWidth = 2;
+            //ctxW40K.fillStyle = "#D5C6BD";
+            //ctxW40K.fillRect(100, 50, 720, 480);
+            //ctxW40K.fillStyle = "#000000";
+            //ctxW40K.strokeRect(100, 50, 720, 480);
+            //ctxW40K.lineWidth = 1;
             //Draw outline of game area(SLUT)
 
             myGamePiece[0].moveAngle = 0;
@@ -577,11 +582,14 @@
 
     </script>
     <script type="text/javascript"
+        src="../../../js/inspirit-jsfeat-4c7b336/minaFeatJSFnjollerialor/setZindexes.js"></script>
+    <script type="text/javascript"
         src="../../../js/inspirit-jsfeat-4c7b336/minaFeatJSFnjollerialor/testDraw.js"></script>
     <script type="text/javascript"
         src="../../../js/inspirit-jsfeat-4c7b336/minaFeatJSFnjollerialor/w40KStateMachine.js"></script>
     <script type="text/javascript"
         src="../../../js/inspirit-jsfeat-4c7b336/minaFeatJSFnjollerialor/w40KMovementPhase.js"></script>
+
 </body>
 
 </html>
