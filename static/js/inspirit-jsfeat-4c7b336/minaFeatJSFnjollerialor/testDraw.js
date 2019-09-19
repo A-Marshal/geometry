@@ -43,6 +43,10 @@ if (window.addEventListener) {
         canvasDraw.width = canvaso.width;
         canvasDraw.height = canvaso.height;
         container.appendChild(canvasDraw);
+        
+        //Change z-index to be on top
+        document.getElementById("imageView").style.zIndex = "2";
+        document.getElementById("imageTemp").style.zIndex = "3";
   
         contextDraw = canvasDraw.getContext('2d');
   

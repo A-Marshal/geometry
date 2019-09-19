@@ -29,22 +29,23 @@
     <div class="row">
         <div id="drawContainer" class="column70">
             <video autoplay="true" id="webcam" width="850" height="600" style="display:none;"></video>
-            <div style=" width:850px;height:600px;margin: 10px auto;">
-                <canvas id="fastPoints" width="850" height="600"></canvas>
-                <canvas id="imageView" width="850" height="600">
-                    <p>Unfortunately, your browser is currently unsupported by our web
-                        application. We are sorry for the inconvenience. Please use one of the
-                        supported browsers listed below, or draw the image you want using an
-                        offline tool.</p>
-                    <p>Supported browsers: <a href="http://www.opera.com">Opera</a>, <a
-                            href="http://www.mozilla.com">Firefox</a>, <a href="http://www.apple.com/safari">Safari</a>,
-                        and
-                        <a href="http://www.konqueror.org">Konqueror</a>.</p>
-                </canvas>
 
+            <canvas id="fastPoints" width="850" height="600"></canvas>
+            <canvas id="imageView" width="850" height="600">
+                <p>Unfortunately, your browser is currently unsupported by our web
+                    application. We are sorry for the inconvenience. Please use one of the
+                    supported browsers listed below, or draw the image you want using an
+                    offline tool.</p>
+                <p>Supported browsers: <a href="http://www.opera.com">Opera</a>, <a
+                        href="http://www.mozilla.com">Firefox</a>, <a href="http://www.apple.com/safari">Safari</a>,
+                    and
+                    <a href="http://www.konqueror.org">Konqueror</a>.</p>
+            </canvas>
+            <div style=" width:850px;height:100px;margin: 1px 10px;">
                 <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
                 <div id="log" class="alert alert-info"></div>
             </div>
+
         </div>
         <div class="column30">
             <p><label>Drawing tool: <select id="dtool">
@@ -95,6 +96,7 @@
             <p id="debugVal"></p>
         </div>
     </div>
+
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
     <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/compatibility.js"></script>
@@ -271,10 +273,7 @@
                 this.context = this.canvas.getContext("2d");
 
                 document.body.insertBefore(this.canvas, document.body.childNodes[2]);
-                //test change canvas
-                //this.canvas.id = "fastPoints";
-                //this.context = this.canvas.getContext("2d");
-                //test change canvas
+
                 this.frameNo = 0;
                 this.interval = setInterval(updateGameArea, 50);
                 window.addEventListener('keydown', function (e) {
@@ -571,11 +570,13 @@
             text += textGameInfo;
 
             //Debug nodes, d v s kolla av canvas id'n o hur de ligger ordnade internt
+            /*
 
             var myNodelist = document.getElementsByTagName("CANVAS");
             for (i = 0; i < myNodelist.length; i++) {
                 text += "<br>Node ID: " + i + "; " + `"` + myNodelist[i].id + `"<br>`;
             }
+            */
 
             document.getElementById("debugVal").innerHTML = text;
         }
