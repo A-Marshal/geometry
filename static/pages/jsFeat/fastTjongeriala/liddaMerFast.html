@@ -73,15 +73,15 @@
 
 <body>
 
-    <video id="video" autoplay width="320" height="240"></video>
-    <canvas id="videoCanvas" width="320" height="240"></canvas>
+    <video id="video" autoplay width="640" height="480"></video>
+    <canvas id="videoCanvas" width="640" height="480"></canvas>
     <div id="startButton" class="button">
         Start
     </div>
     <div class="button" id="stopButton">
         Stop Video
     </div>
-    <div style=" width:850px;height:100px;margin: 1px 10px;">
+    <div style=" width:640px;height:100px;margin: 1px 10px;">
         <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
         <div id="log" class="alert alert-info"></div>
     </div>
@@ -146,7 +146,7 @@
 
         var onDimensionsReady = function (width, height) {
             demo_app(width, height);
-            compatibility.requestAnimationFrame(tick);
+            //compatibility.requestAnimationFrame(tick);
         };
 
         var stat = new profiler();
@@ -166,10 +166,10 @@
             ctx.fillStyle = "rgb(0,255,0)";
             ctx.strokeStyle = "rgb(0,255,0)";
 
-            img_u8 = new jsfeat.matrix_t(320, 240, jsfeat.U8_t | jsfeat.C1_t);
+            img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8_t | jsfeat.C1_t);
 
             corners = [];
-            var i = 320 * 240;
+            var i = videoWidth * videoHeight;
             while (--i >= 0) {
                 corners[i] = new jsfeat.keypoint_t(0, 0, 0, 0);
             }
@@ -187,33 +187,6 @@
             stat.add("fast corners");
         }
 
-        function tick() {
-            compatibility.requestAnimationFrame(tick);
-            stat.new_frame();
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                ctx.drawImage(video, 0, 0, 320, 240);
-                var imageData = ctx.getImageData(0, 0, 320, 240);
-
-                stat.start("grayscale");
-                jsfeat.imgproc.grayscale(imageData.data, 320, 240, img_u8);
-                stat.stop("grayscale");
-
-                if (threshold != options.threshold) {
-                    threshold = options.threshold | 0;
-                    jsfeat.fast_corners.set_threshold(threshold);
-                }
-
-                stat.start("fast corners");
-                var count = jsfeat.fast_corners.detect(img_u8, corners, 5);
-                stat.stop("fast corners");
-
-                // render result back to canvas
-                var data_u32 = new Uint32Array(imageData.data.buffer);
-                render_corners(corners, count, data_u32, 320);
-
-                ctx.putImageData(imageData, 0, 0);
-            }
-        }
 
         function render_corners(corners, count, img, step) {
             var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00;
@@ -234,8 +207,26 @@
             setInterval(function () {
                 var canvas = document.getElementById('videoCanvas');
                 var ctxx = canvas.getContext("2d");
-                ctxx.drawImage(video, 0, 0, 320, 240);
-            }, 100);
+                ctxx.drawImage(video, 0, 0, video.width, video.height);
+
+                //Jaha, här ska vi möge in FAST...
+                var imageData = ctxx.getImageData(0, 0, video.width, video.height);
+
+                jsfeat.imgproc.grayscale(imageData.data, video.width, video.height, img_u8);
+
+                if (threshold != options.threshold) {
+                    threshold = options.threshold | 0;
+                    jsfeat.fast_corners.set_threshold(threshold);
+                }
+                var count = jsfeat.fast_corners.detect(img_u8, corners, 5);
+
+                // render result back to canvas
+                var data_u32 = new Uint32Array(imageData.data.buffer);
+                render_corners(corners, count, data_u32, video.width);
+
+                ctxx.putImageData(imageData, 0, 0);
+                //Jaha, här ska vi mäge in FAST
+            }, 200);
         }
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
@@ -244,7 +235,7 @@
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
 
-        let videoDefaultConstraintString = '{\n  "width": 320,\n  "height": 240,\n  "frameRate": 3\n}';
+        let videoDefaultConstraintString = '{\n  "width": 640,\n  "height": 480,\n  "frameRate": 30\n}';
         let audioDefaultConstraintString = '{\n  "sampleSize": 16,\n  "channelCount": 2,\n  "echoCancellation": false\n}';
         let videoConstraints = null;
         let audioConstraints = null;
@@ -290,7 +281,7 @@
 
                 //Här starter vi mitt mög
                 webCamFeed(videoElement);
-                onDimensionsReady(320, 240);
+                onDimensionsReady(videoElement.width, videoElement.height);
                 //Här starter vi mitt mög
 
                 if (audioTracks.length) {
