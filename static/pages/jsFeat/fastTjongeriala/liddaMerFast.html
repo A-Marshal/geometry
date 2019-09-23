@@ -211,9 +211,9 @@
                 var canvas = document.getElementById('videoCanvas');
                 var ctxx = canvas.getContext("2d");
                 var i = 0, sumTotalX = 0, sumTotalY = 0, sum0040X = 0, sum0040Y = 0, sum4180X = 0, sum4180Y = 0;
-                var maxTotalX = 0, minTotalX = 999, maxTotalY = 0, minTotalY = 999;
-                var max0040X = 0, min0040X = 999, max0040Y = 0, min0040Y = 999;
-                var max4180X = 0, min4180X = 999, max4180Y = 0, min4180Y = 999;
+                var maxTotalX = -999, minTotalX = 999, maxTotalY = -999, minTotalY = 999;
+                var max0040X = -999, min0040X = 999, max0040Y = -999, min0040Y = 999;
+                var max4180X = -999, min4180X = 999, max4180Y = -999, min4180Y = 999;
                 ctxx.drawImage(video, 0, 0, video.width, video.height);
 
                 //Jaha, här ska vi möge in FAST...
@@ -243,61 +243,61 @@
                 for (i = 0; i < count; i++) {
                     sumTotalX += corners[i].x;
                     sumTotalY += corners[i].y;
-                    maxTotalX = Math.max(maxTotalX, corners[i].x);
-                    maxTotalY = Math.max(maxTotalY, corners[i].y);
-                    minTotalX = Math.min(minTotalX, corners[i].x);
-                    minTotalY = Math.min(minTotalY, corners[i].y);
-                    if (corners[i].score < 40) {
-                        sum0040X += corners[i].x;
-                        sum0040Y += corners[i].y;
-                        max0040X = Math.max(max0040X, corners[i].x);
-                        max0040Y = Math.max(max0040Y, corners[i].y);
-                        min0040X = Math.min(min0040X, corners[i].x);
-                        min0040Y = Math.min(min0040Y, corners[i].y);
-                    } else {
-                        sum4180X += corners[i].x;
-                        sum4180Y += corners[i].y;
-                        max4180X = Math.max(max4180X, corners[i].x);
-                        max4180Y = Math.max(max4180Y, corners[i].y);
-                        min4180X = Math.min(min4180X, corners[i].x);
-                        min4180Y = Math.min(min4180Y, corners[i].y);
-                    }
-                }
 
-                //Här ridas då infon ud
-                // Red rectangle
-                ctx.beginPath();
-                ctx.lineWidth = "6";
-                ctx.strokeStyle = "red";
-                ctx.rect(minTotalX, minTotalY, (maxTotalX-minTotalX), (maxTotalY-minTotalY));
-                ctx.stroke();
+                    if ((corners[i].score > 20) && (corners[i].score < 40)) {
+                sum0040X += corners[i].x;
+                sum0040Y += corners[i].y;
+                maxTotalX = Math.max(maxTotalX, corners[i].x);
+                maxTotalY = Math.max(maxTotalY, corners[i].y);
+                minTotalX = Math.min(minTotalX, corners[i].x);
+                minTotalY = Math.min(minTotalY, corners[i].y);
+            } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
+                sum4180X += corners[i].x;
+                sum4180Y += corners[i].y;
+                max0040X = Math.max(max0040X, corners[i].x);
+                max0040Y = Math.max(max0040Y, corners[i].y);
+                min0040X = Math.min(min0040X, corners[i].x);
+                min0040Y = Math.min(min0040Y, corners[i].y);
+            } else if (corners[i].score > 81) {
+                max4180X = Math.max(max4180X, corners[i].x);
+                max4180Y = Math.max(max4180Y, corners[i].y);
+                min4180X = Math.min(min4180X, corners[i].x);
+                min4180Y = Math.min(min4180Y, corners[i].y);
+            }
+        }
 
-                // Green rectangle
-                ctx.beginPath();
-                ctx.lineWidth = "4";
-                ctx.strokeStyle = "green";
-                ctx.rect(min0040X, min0040Y, (max0040X-min0040X), (max0040Y-min0040Y));
-                ctx.stroke();
+        //Här ridas då infon ud
+        // Red rectangle
+        ctx.beginPath();
+        ctx.lineWidth = "6";
+        ctx.strokeStyle = "red";
+        ctx.rect(minTotalX, minTotalY, (maxTotalX - minTotalX), (maxTotalY - minTotalY));
+        ctx.stroke();
 
-                // Blue rectangle
-                ctx.beginPath();
-                ctx.lineWidth = "10";
-                ctx.strokeStyle = "blue";
-                ctx.rect(min4180X, min4180Y, (max4180X-min4180X), (max4180Y-min4180Y));
-                ctx.stroke();
+        // Green rectangle
+        ctx.beginPath();
+        ctx.strokeStyle = "green";
+        ctx.rect(min0040X, min0040Y, (max0040X - min0040X), (max0040Y - min0040Y));
+        ctx.stroke();
 
-                //Här skrifves då infon ud
-                sumTotalX /= count;
-                sumTotalY /= count;
-                sum0040X /= count;
-                sum0040Y /= count;
-                sum4180X /= count;
-                sum4180Y /= count;
+        // Blue rectangle
+        ctx.beginPath();
+        ctx.strokeStyle = "blue";
+        ctx.rect(min4180X, min4180Y, (max4180X - min4180X), (max4180Y - min4180Y));
+        ctx.stroke();
 
-                logElement.innerHTML += "<br>Medelvärde alla FAST punkter X: " + sumTotalX.toFixed(2);
-                logElement.innerHTML += "<br>Medelvärde alla FAST punkter Y: " + sumTotalY.toFixed(2);
-                logElement.innerHTML += "<br>Medelvärde FAST punkter med score mellan 0 och 40, X: " + sum0040X.toFixed(2);
-                logElement.innerHTML += "<br>Medelvärde FAST punkter med score mellan 0 och 40, Y: " + sum0040Y.toFixed(2);
+        //Här skrifves då infon ud
+        sumTotalX /= count;
+        sumTotalY /= count;
+        sum0040X /= count;
+        sum0040Y /= count;
+        sum4180X /= count;
+        sum4180Y /= count;
+
+        logElement.innerHTML += "<br>Medelvärde alla FAST punkter X: " + sumTotalX.toFixed(2);
+        logElement.innerHTML += "<br>Medelvärde alla FAST punkter Y: " + sumTotalY.toFixed(2);
+        logElement.innerHTML += "<br>Medelvärde FAST punkter med score mellan 0 och 40, X: " + sum0040X.toFixed(2);
+        logElement.innerHTML += "<br>Medelvärde FAST punkter med score mellan 0 och 40, Y: " + sum0040Y.toFixed(2);
 
             }, 200);
         }
