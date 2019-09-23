@@ -88,6 +88,10 @@
     </div>
     <br>
     <br>
+    <br>
+    <br>
+    <br>
+    <br>
     <p>Experiment with media constraints! Edit the constraint sets for the
         video and audio tracks in the edit boxes on the left, then click the
         "Apply Constraints" button to try them out. The actual settings the
@@ -210,13 +214,17 @@
             setInterval(function () {
                 var canvas = document.getElementById('videoCanvas');
                 var ctxx = canvas.getContext("2d");
-                var i = 0, sumTotalX = 0, sumTotalY = 0, sum0040X = 0, sum0040Y = 0, sum4180X = 0, sum4180Y = 0;
+                var i = 0;
+                var sumTotalX = 0, sumTotalY = 0, sumLowThX = 0, sumLowThY = 0, sumMidThX = 0, sumMidThY = 0, sumHiThX = 0, sumHiThY = 0;
                 var maxTotalX = -999, minTotalX = 999, maxTotalY = -999, minTotalY = 999;
-                var max0040X = -999, min0040X = 999, max0040Y = -999, min0040Y = 999;
-                var max4180X = -999, min4180X = 999, max4180Y = -999, min4180Y = 999;
+                var maxLowThX = -999, minLowThX = 999, maxLowThY = -999, minLowThY = 999;
+                var maxMidThX = -999, minMidThX = 999, maxMidThY = -999, minMidThY = 999;
+                var maxHiThX = -999, minHiThX = 999, maxHiThY = -999, minHiThY = 999;
+
+                //Draw video onto canvas, this is only to be able to obtain video pixels
                 ctxx.drawImage(video, 0, 0, video.width, video.height);
 
-                //Jaha, här ska vi möge in FAST...
+                //Get video frame pixels
                 var imageData = ctxx.getImageData(0, 0, video.width, video.height);
 
                 //Den här ska vi möge té själve, vi har liesom en fan så möge bättre algo
@@ -226,79 +234,109 @@
                     threshold = options.threshold | 0;
                     jsfeat.fast_corners.set_threshold(threshold);
                 }
-                var count = jsfeat.fast_corners.detect(img_u8, corners, 5);
+
+                //Given that the total FAST point count is available here,
+                //all other count variables are initiated here as well.
+                var countTot = jsfeat.fast_corners.detect(img_u8, corners, 5);
+                var countHiTh = 0, countMidTh = 0, countLowTh = 0;
 
                 // render result back to canvas
                 var data_u32 = new Uint32Array(imageData.data.buffer);
-                render_corners(corners, count, data_u32, video.width);
+                render_corners(corners, countTot, data_u32, video.width);
 
                 ctxx.putImageData(imageData, 0, 0);
                 //Jaha, här ska vi mäge in FAST(SLUT)
 
                 //Vi mögar ud lidda info om'et heile
-                logElement.innerHTML = "# of FAST points: " + count;
-                logElement.innerHTML += "<br>Av ren nyfikenhet, corners.length: " + corners.length;
+                logElement.innerHTML = "# of FAST points: " + countTot;
 
                 //Vi mögar lidda té
-                for (i = 0; i < count; i++) {
+                for (i = 0; i < countTot; i++) {
                     sumTotalX += corners[i].x;
                     sumTotalY += corners[i].y;
-
+                    maxTotalX = Math.max(maxTotalX, corners[i].x);
+                    maxTotalY = Math.max(maxTotalY, corners[i].y);
+                    minTotalX = Math.min(minTotalX, corners[i].x);
+                    minTotalY = Math.min(minTotalY, corners[i].y);
                     if ((corners[i].score > 20) && (corners[i].score < 40)) {
-                sum0040X += corners[i].x;
-                sum0040Y += corners[i].y;
-                maxTotalX = Math.max(maxTotalX, corners[i].x);
-                maxTotalY = Math.max(maxTotalY, corners[i].y);
-                minTotalX = Math.min(minTotalX, corners[i].x);
-                minTotalY = Math.min(minTotalY, corners[i].y);
-            } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
-                sum4180X += corners[i].x;
-                sum4180Y += corners[i].y;
-                max0040X = Math.max(max0040X, corners[i].x);
-                max0040Y = Math.max(max0040Y, corners[i].y);
-                min0040X = Math.min(min0040X, corners[i].x);
-                min0040Y = Math.min(min0040Y, corners[i].y);
-            } else if (corners[i].score > 81) {
-                max4180X = Math.max(max4180X, corners[i].x);
-                max4180Y = Math.max(max4180Y, corners[i].y);
-                min4180X = Math.min(min4180X, corners[i].x);
-                min4180Y = Math.min(min4180Y, corners[i].y);
-            }
-        }
+                        sumLowThX += corners[i].x;
+                        sumLowThY += corners[i].y;
+                        maxLowThX = Math.max(maxLowThX, corners[i].x);
+                        maxLowThY = Math.max(maxLowThY, corners[i].y);
+                        minLowThX = Math.min(minLowThX, corners[i].x);
+                        minLowThY = Math.min(minLowThY, corners[i].y);
+                        countLowTh++;
+                    } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
+                        sumMidThX += corners[i].x;
+                        sumMidThY += corners[i].y;
+                        maxMidThX = Math.max(maxMidThX, corners[i].x);
+                        maxMidThY = Math.max(maxMidThY, corners[i].y);
+                        minMidThX = Math.min(minMidThX, corners[i].x);
+                        minMidThY = Math.min(minMidThY, corners[i].y);
+                        countMidTh++;
+                    } else if (corners[i].score > 81) {
+                        sumHiThX += corners[i].x;
+                        sumHiThY += corners[i].y;
+                        maxHiThX = Math.max(maxHiThX, corners[i].x);
+                        maxHiThY = Math.max(maxHiThY, corners[i].y);
+                        minHiThX = Math.min(minHiThX, corners[i].x);
+                        minHiThY = Math.min(minHiThY, corners[i].y);
+                        countHiTh++;
+                    }
+                }
 
-        //Här ridas då infon ud
-        // Red rectangle
-        ctx.beginPath();
-        ctx.lineWidth = "6";
-        ctx.strokeStyle = "red";
-        ctx.rect(minTotalX, minTotalY, (maxTotalX - minTotalX), (maxTotalY - minTotalY));
-        ctx.stroke();
+                //Här ridas då infon ud
+                if (countTot > 2) {
+                    sumTotalX /= countTot;
+                    sumTotalY /= countTot;
+                }
+                if (countLowTh > 2) {
+                    sumLowThX /= countLowTh;
+                    sumLowThY /= countLowTh;
+                    // Red rectangle
+                    ctx.beginPath();
+                    ctx.lineWidth = "6";
+                    ctx.strokeStyle = "red";
+                    ctx.rect(minLowThX, minLowThY, (maxLowThX - minLowThX), (maxLowThY - minLowThY));
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(sumLowThX, sumLowThY, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+                if (countMidTh > 2) {
+                    sumMidThX /= countMidTh;
+                    sumMidThY /= countMidTh;
+                    // Green rectangle
+                    ctx.beginPath();
+                    ctx.strokeStyle = "green";
+                    ctx.rect(minMidThX, minMidThY, (maxMidThX - minMidThX), (maxMidThY - minMidThY));
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(sumMidThX, sumMidThY, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+                if (countHiTh > 2) {
+                    sumHiThX /= countHiTh;
+                    sumHiThY /= countHiTh;
+                    // Blue rectangle
+                    ctx.beginPath();
+                    ctx.strokeStyle = "blue";
+                    ctx.rect(minHiThX, minHiThY, (maxHiThX - minHiThX), (maxHiThY - minHiThY));
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(sumHiThX, sumHiThY, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
 
-        // Green rectangle
-        ctx.beginPath();
-        ctx.strokeStyle = "green";
-        ctx.rect(min0040X, min0040Y, (max0040X - min0040X), (max0040Y - min0040Y));
-        ctx.stroke();
-
-        // Blue rectangle
-        ctx.beginPath();
-        ctx.strokeStyle = "blue";
-        ctx.rect(min4180X, min4180Y, (max4180X - min4180X), (max4180Y - min4180Y));
-        ctx.stroke();
-
-        //Här skrifves då infon ud
-        sumTotalX /= count;
-        sumTotalY /= count;
-        sum0040X /= count;
-        sum0040Y /= count;
-        sum4180X /= count;
-        sum4180Y /= count;
-
-        logElement.innerHTML += "<br>Medelvärde alla FAST punkter X: " + sumTotalX.toFixed(2);
-        logElement.innerHTML += "<br>Medelvärde alla FAST punkter Y: " + sumTotalY.toFixed(2);
-        logElement.innerHTML += "<br>Medelvärde FAST punkter med score mellan 0 och 40, X: " + sum0040X.toFixed(2);
-        logElement.innerHTML += "<br>Medelvärde FAST punkter med score mellan 0 och 40, Y: " + sum0040Y.toFixed(2);
-
+                //Här skrifves då infon ud
+                logElement.innerHTML += "<br>Medelvärde alla FAST punkter X: " + sumTotalX.toFixed(2);
+                logElement.innerHTML += "<br>Medelvärde alla FAST punkter Y: " + sumTotalY.toFixed(2);
+                logElement.innerHTML += "<br>Medelvärde FAST punkter med låg score, X: " + sumLowThX.toFixed(2);
+                logElement.innerHTML += "<br>Medelvärde FAST punkter med låg score, Y: " + sumLowThY.toFixed(2);
+                logElement.innerHTML += "<br>Medelvärde FAST punkter med mellan score, X: " + sumMidThX.toFixed(2);
+                logElement.innerHTML += "<br>Medelvärde FAST punkter med mellan score, Y: " + sumMidThY.toFixed(2);
+                logElement.innerHTML += "<br>Medelvärde FAST punkter med hög score, X: " + sumHiThX.toFixed(2);
+                logElement.innerHTML += "<br>Medelvärde FAST punkter med hög score, Y: " + sumHiThY.toFixed(2);
             }, 200);
         }
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
