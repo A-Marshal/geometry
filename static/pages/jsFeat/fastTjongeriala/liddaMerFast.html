@@ -252,36 +252,38 @@
 
                 //Vi mögar lidda té
                 for (i = 0; i < countTot; i++) {
-                    sumTotalX += corners[i].x;
-                    sumTotalY += corners[i].y;
-                    maxTotalX = Math.max(maxTotalX, corners[i].x);
-                    maxTotalY = Math.max(maxTotalY, corners[i].y);
-                    minTotalX = Math.min(minTotalX, corners[i].x);
-                    minTotalY = Math.min(minTotalY, corners[i].y);
-                    if ((corners[i].score > 20) && (corners[i].score < 40)) {
-                        sumLowThX += corners[i].x;
-                        sumLowThY += corners[i].y;
-                        maxLowThX = Math.max(maxLowThX, corners[i].x);
-                        maxLowThY = Math.max(maxLowThY, corners[i].y);
-                        minLowThX = Math.min(minLowThX, corners[i].x);
-                        minLowThY = Math.min(minLowThY, corners[i].y);
-                        countLowTh++;
-                    } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
-                        sumMidThX += corners[i].x;
-                        sumMidThY += corners[i].y;
-                        maxMidThX = Math.max(maxMidThX, corners[i].x);
-                        maxMidThY = Math.max(maxMidThY, corners[i].y);
-                        minMidThX = Math.min(minMidThX, corners[i].x);
-                        minMidThY = Math.min(minMidThY, corners[i].y);
-                        countMidTh++;
-                    } else if (corners[i].score > 81) {
-                        sumHiThX += corners[i].x;
-                        sumHiThY += corners[i].y;
-                        maxHiThX = Math.max(maxHiThX, corners[i].x);
-                        maxHiThY = Math.max(maxHiThY, corners[i].y);
-                        minHiThX = Math.min(minHiThX, corners[i].x);
-                        minHiThY = Math.min(minHiThY, corners[i].y);
-                        countHiTh++;
+                    if ((withinROI(corners, i))) {
+                        sumTotalX += corners[i].x;
+                        sumTotalY += corners[i].y;
+                        maxTotalX = Math.max(maxTotalX, corners[i].x);
+                        maxTotalY = Math.max(maxTotalY, corners[i].y);
+                        minTotalX = Math.min(minTotalX, corners[i].x);
+                        minTotalY = Math.min(minTotalY, corners[i].y);
+                        if ((corners[i].score > 20) && (corners[i].score < 40)) {
+                            sumLowThX += corners[i].x;
+                            sumLowThY += corners[i].y;
+                            maxLowThX = Math.max(maxLowThX, corners[i].x);
+                            maxLowThY = Math.max(maxLowThY, corners[i].y);
+                            minLowThX = Math.min(minLowThX, corners[i].x);
+                            minLowThY = Math.min(minLowThY, corners[i].y);
+                            countLowTh++;
+                        } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
+                            sumMidThX += corners[i].x;
+                            sumMidThY += corners[i].y;
+                            maxMidThX = Math.max(maxMidThX, corners[i].x);
+                            maxMidThY = Math.max(maxMidThY, corners[i].y);
+                            minMidThX = Math.min(minMidThX, corners[i].x);
+                            minMidThY = Math.min(minMidThY, corners[i].y);
+                            countMidTh++;
+                        } else if (corners[i].score > 61) {
+                            sumHiThX += corners[i].x;
+                            sumHiThY += corners[i].y;
+                            maxHiThX = Math.max(maxHiThX, corners[i].x);
+                            maxHiThY = Math.max(maxHiThY, corners[i].y);
+                            minHiThX = Math.min(minHiThX, corners[i].x);
+                            minHiThY = Math.min(minHiThY, corners[i].y);
+                            countHiTh++;
+                        }
                     }
                 }
 
@@ -338,6 +340,22 @@
                 logElement.innerHTML += "<br>Medelvärde FAST punkter med hög score, X: " + sumHiThX.toFixed(2);
                 logElement.innerHTML += "<br>Medelvärde FAST punkter med hög score, Y: " + sumHiThY.toFixed(2);
             }, 200);
+        }
+
+        function withinROI(corners, i) {
+            var isWithin = false;
+            var minX, minY, maxX, maxY;
+
+            minX = 260;
+            maxX = 560;
+            minY = 220;
+            maxY = 440;
+
+            if ((corners[i].x > minX) && (corners[i].x < maxX) && (corners[i].y > minY) && (corners[i].y < maxY)) {
+                isWithin = true;
+            }
+
+            return isWithin;
         }
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
