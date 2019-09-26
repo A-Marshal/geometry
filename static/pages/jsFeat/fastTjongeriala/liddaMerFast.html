@@ -67,41 +67,6 @@
             padding-top: 10px;
             font-size: 18px;
         }
-
-        .slidecontainer {
-            width: 100%;
-        }
-
-        .slider {
-            -webkit-appearance: none;
-            width: 25%;
-            height: 25px;
-            background: #d3d3d3;
-            outline: none;
-            opacity: 0.7;
-            -webkit-transition: .2s;
-            transition: opacity .2s;
-        }
-
-        .slider:hover {
-            opacity: 1;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 25px;
-            height: 25px;
-            background: #4CAF50;
-            cursor: pointer;
-        }
-
-        .slider::-moz-range-thumb {
-            width: 25px;
-            height: 25px;
-            background: #4CAF50;
-            cursor: pointer;
-        }
     </style>
 
     <title>Capabilities, constraints, and settings - Example_Constraint_exerciser - code sample</title>
@@ -109,7 +74,8 @@
 
 <body>
 
-    <video id="video" autoplay width="640" height="480"></video>
+    <video id="video" autoplay width="640" height="480" style="display: none"></video>
+    <canvas id="testCanvas" width="640" height="480"></canvas>
     <canvas id="videoCanvas" width="640" height="480"></canvas>
     <div id="startButton" class="button">
         Start
@@ -127,18 +93,6 @@
     <br>
     <br>
     <br>
-
-    <h3>Set region of interest</h3>
-    <div class="slidecontainer">
-        <input type="range" min="0" max="320" value="175" class="slider" id="roiMinX">
-        <p id="valRoiMinX"></p>
-        <input type="range" min="321" max="640" value="574" class="slider" id="roiMaxX">
-        <p id="valRoiMaxX"></p>
-        <input type="range" min="0" max="240" value="200" class="slider" id="roiMinY">
-        <p id="valRoiMinY"></p>
-        <input type="range" min="241" max="480" value="365" class="slider" id="roiMaxY">
-        <p id="valRoiMaxY"></p>
-    </div>
 
     <h3>Constrainable properties available:</h3>
     <ul id="supportedConstraints">
@@ -176,7 +130,6 @@
 
     <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
     <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/compatibility.js"></script>
-    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/profiler.js"></script>
     <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
 
     <script type="text/javascript">
@@ -196,18 +149,38 @@
             demo_app(width, height);
         };
 
-        var stat = new profiler();
-
+        //App variables 
         var gui, options, ctx, canvasWidth, canvasHeight;
         var img_u8, corners, cornersStationary, threshold;
+        var roiWidth, roiHeight, roiX0, roiY0;
+
         //Mina variabler för att särskilja stationära vs icke - stationära FAST
-        var stationaryCornerHitVal = 10
-        var minValForStationary = 5;
+        var stationaryCornerHitVal = 4
+        var minValForStationary = 1;
         var stationaryNeighbourhood = 3;
-        var minCornerScoreForStationary = 50;
+        var minCornerScoreForStationary = 500;
+
+        //färg corner count variabler
+        var greenCornerCount = 0;
+        var greenCornerCountPrevious = 0;
+        var greenCornerCountBreak = 95; //NB: percent meant
+        var resetTracking = 0;
+
+        //Init default values for options sliders
+        threshold = 14;
+        roiWidth = 479;
+        roiHeight = 271;
+        roiX0 = 83;
+        roiY0 = 94;
+        minCornerScoreForStationary = 50;
 
         var demo_opt = function () {
             this.threshold = 14;
+            this.roiWidth = 479;
+            this.roiHeight = 271;
+            this.roiX0 = 83;
+            this.roiY0 = 94;
+            this.minCornerScoreForStationary = 50;
         }
 
         function demo_app(videoWidth, videoHeight) {
@@ -228,17 +201,18 @@
                 cornersStationary[i] = 0;
             }
 
-            threshold = 14;
-
+            //Set FAST corners threshold
             jsfeat.fast_corners.set_threshold(threshold);
 
             options = new demo_opt();
             gui = new dat.GUI();
 
             gui.add(options, 'threshold', 5, 100).step(1);
-
-            stat.add("grayscale");
-            stat.add("fast corners");
+            gui.add(options, 'roiWidth', 0, 640).step(1);
+            gui.add(options, 'roiHeight', 0, 480).step(1);
+            gui.add(options, 'roiX0', 0, 640).step(1);
+            gui.add(options, 'roiY0', 0, 480).step(1);
+            gui.add(options, 'minCornerScoreForStationary', 5, 100).step(1);
         }
 
 
@@ -246,6 +220,10 @@
             var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00; //green, ABGR
             var redPix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
             var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //red, ABGR
+            
+            greenCornerCountPrevious = greenCornerCount;
+            greenCornerCount = 0;
+            
             for (var i = 0; i < count; ++i) {
                 var x = corners[i].x;
                 var y = corners[i].y;
@@ -268,6 +246,7 @@
                     img[off + 1] = pix;
                     img[off - step] = pix;
                     img[off + step] = pix;
+                    greenCornerCount++;
                 }
             }
         }
@@ -287,15 +266,24 @@
                 //Draw video onto canvas, this is only to be able to obtain video pixels
                 ctxx.drawImage(video, 0, 0, video.width, video.height);
 
-                //Get video frame pixels
+                //Get video frame pixels for FAST points
                 var imageData = ctxx.getImageData(0, 0, video.width, video.height);
+
+                //Get video frame pixels for test canvas
+                var imageDataStationary = ctxx.getImageData(0, 0, video.width, video.height);
 
                 //Den här ska vi möge té själve, vi har liesom en fan så möge bättre algo
                 jsfeat.imgproc.grayscale(imageData.data, video.width, video.height, img_u8);
 
+                //Update threshold from slider
                 if (threshold != options.threshold) {
                     threshold = options.threshold | 0;
                     jsfeat.fast_corners.set_threshold(threshold);
+                }
+
+                //Update minCornerScoreForStationary from slider
+                if (minCornerScoreForStationary != options.minCornerScoreForStationary) {
+                    minCornerScoreForStationary = options.minCornerScoreForStationary | 0;
                 }
 
                 //Given that the total FAST point count is available here,
@@ -312,7 +300,7 @@
                         cornersStationary[i]--;
                 }
 
-                //Vi mögar lidda té
+                //Fokusareor i bilden
                 for (i = 0; i < countTot; i++) {
                     //Erhåll fokusareor
                     if ((withinROI(i))) {
@@ -361,19 +349,41 @@
 
                 //Testa o få till visa stationära pixlar, uti dé blå té'n börjen
                 for (i = 0; i < countTot; i++) {
-                var x = corners[i].x;
-                var y = corners[i].y;
-                var off = (x + y * video.width);
-                cornersStationary[off] = stationaryCornerHitVal;
-                cornersStationary[off - 1] = stationaryCornerHitVal;
-                cornersStationary[off + 1] = stationaryCornerHitVal;
-                cornersStationary[off - video.width] = stationaryCornerHitVal;
-                cornersStationary[off - video.width - 1] = stationaryCornerHitVal;
-                cornersStationary[off - video.width + 1] = stationaryCornerHitVal;
-                cornersStationary[off + video.width] = stationaryCornerHitVal;
-                cornersStationary[off + video.width - 1] = stationaryCornerHitVal;
-                cornersStationary[off + video.width + 1] = stationaryCornerHitVal;
+                    var x = corners[i].x;
+                    var y = corners[i].y;
+                    var off = (x + y * video.width);
+                    cornersStationary[off] = stationaryCornerHitVal;
+                    cornersStationary[off - 1] = stationaryCornerHitVal;
+                    cornersStationary[off + 1] = stationaryCornerHitVal;
+                    cornersStationary[off - video.width] = stationaryCornerHitVal;
+                    cornersStationary[off - video.width - 1] = stationaryCornerHitVal;
+                    cornersStationary[off - video.width + 1] = stationaryCornerHitVal;
+                    cornersStationary[off + video.width] = stationaryCornerHitVal;
+                    cornersStationary[off + video.width - 1] = stationaryCornerHitVal;
+                    cornersStationary[off + video.width + 1] = stationaryCornerHitVal;
                 }
+
+                //Vi målar ut vad stationary punkterna visar
+
+                //Get video frame pixels
+                var canvasStationary = document.getElementById('testCanvas');
+                var ctxxStationary = canvasStationary.getContext("2d");
+                var data_u32Stationary = new Uint32Array(imageDataStationary.data.buffer);
+                
+                if (resetTracking < 4) {
+                    resetTracking++;
+                }
+
+                if (((Math.abs(greenCornerCountPrevious - greenCornerCount)/greenCornerCountPrevious*100) > greenCornerCountBreak)) {
+                    resetTracking = 0;
+                }
+
+                if (resetTracking == 4) {
+                    render_cornersStationary(cornersStationary, countTot, data_u32Stationary, video.width);
+                }
+
+                ctxxStationary.putImageData(imageDataStationary, 0, 0);
+                //Vi målar ut vad stationary punkterna visar(SLUT)
 
                 //Jaha, här ska vi mäge in FAST(SLUT)
 
@@ -422,6 +432,12 @@
                     ctx.arc(sumHiThX, sumHiThY, 8, 0, 2 * Math.PI);
                     ctx.stroke();
                 }
+                //ROI rectangle
+                ctx.beginPath();
+                ctx.lineWidth = "1";
+                ctx.strokeStyle = "white";
+                ctx.rect(options.roiX0, options.roiY0, options.roiWidth, options.roiHeight);
+                ctx.stroke();
 
                 //Här skrifves då infon ud
                 logElement.innerHTML += "<br>Medelvärde alla FAST punkter X: " + sumTotalX.toFixed(2);
@@ -442,52 +458,15 @@
         //Ännu mera mina funktioner, nu ska vi möga té ROI
         //Ännu mera mina funktioner, nu ska vi möga té ROI
 
-        //Slider 1
-        var slider1 = document.getElementById("roiMinX");
-        var output1 = document.getElementById("valRoiMinX");
-        output1.innerHTML = "Min X: " + slider1.value; // Display the default slider value
-
-        //Slider 2
-        var slider2 = document.getElementById("roiMaxX");
-        var output2 = document.getElementById("valRoiMaxX");
-        output2.innerHTML = "Max X: " + slider2.value; // Display the default slider value
-
-        //Slider 3
-        var slider3 = document.getElementById("roiMinY");
-        var output3 = document.getElementById("valRoiMinY");
-        output3.innerHTML = "Min Y: " + slider3.value; // Display the default slider value
-
-        //Slider 4
-        var slider4 = document.getElementById("roiMaxY");
-        var output4 = document.getElementById("valRoiMaxY");
-        output4.innerHTML = "Max Y: " + slider4.value; // Display the default slider value
-
-        //Add event listeners to sliders for automatic update of p - elements
-        slider1.oninput = function () {
-            output1.innerHTML = "Min X: " + this.value;
-        }
-
-        slider2.oninput = function () {
-            output2.innerHTML = "Max X: " + this.value;
-        }
-
-        slider3.oninput = function () {
-            output3.innerHTML = "Min Y: " + this.value;
-        }
-
-        slider4.oninput = function () {
-            output4.innerHTML = "Max Y: " + this.value;
-        }
-
         //Är en corner pixel inom ROI?
         function withinROI(i) {
             var isWithin = false;
             var minX, minY, maxX, maxY;
 
-            minX = slider1.value;
-            maxX = slider2.value;
-            minY = slider3.value;
-            maxY = slider4.value;
+            minX = options.roiX0; //slider1.value;
+            maxX = options.roiX0 + options.roiWidth; //slider2.value;
+            minY = options.roiY0; //slider3.value;
+            maxY = options.roiY0 + options.roiHeight //slider4.value;
 
             if ((corners[i].x > minX) && (corners[i].x < maxX) && (corners[i].y > minY) && (corners[i].y < maxY)) {
                 isWithin = true;
@@ -502,6 +481,37 @@
         //Ännu mera mina funktioner, nu ska vi möga té ROI
         //Ännu mera mina funktioner, nu ska vi möga té ROI
         //Ännu mera mina funktioner, nu ska vi möga té ROI
+
+        //Vi glor in rörelserna i bilden vet jag
+        function render_cornersStationary(cornersStationary, count, img, step) {
+            var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00; //green, ABGR
+            var redPix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
+            var bluePix = (0xff << 24) | (0xff << 16) | (0x00 << 8) | 0x00; //blue, ABGR
+            var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //blue, ABGR
+
+            for (var i = 0; i < cornersStationary.length; ++i) {
+                switch (cornersStationary[i]) {
+                    case 0:
+                        //show image pixels as they are
+                        break;
+                    case 1:
+                        img[i] = bluePix;
+                        break;
+                    case 2:
+                        img[i] = pinkPix;
+                        break;
+                    case 3:
+                        img[i] = redPix;
+                        break;
+                    case 4:
+                        img[i] = pix;
+                        break;
+                    default:
+                    // code block
+                }
+            }
+        }
+        //Vi glor in rörelserna i bilden vet jag
 
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
