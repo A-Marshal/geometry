@@ -160,6 +160,14 @@
         var stationaryNeighbourhood = 3;
         var minCornerScoreForStationary = 500;
 
+        //Rörelsevariabler, gröna är nuvarande frames FAST som träffat föregående
+        //frames FAST indikationer.
+        //Blåa är FAST punkter som var fasta, d v s röda med hit val 4 i förra framen
+        //men som i nuvarande frame inte träffats alls av en FAST point
+        //d v s hitval är nu 3.
+        var greenSumX = 0, greenSumY = 0, greenCount = 0, greenMeanX = 0, greenMeanY = 0;
+        var blueSumX = 0, blueSumY = 0, blueCount, blueMeanX = 0, blueMeanY = 0;
+
 
         //Init default values for options sliders
         threshold = 14;
@@ -361,10 +369,15 @@
                 var ctxxStationary = canvasStationary.getContext("2d");
                 var data_u32Stationary = new Uint32Array(imageDataStationary.data.buffer);
 
-                render_cornersStationary(corners, cornersStationary, countTot, data_u32Stationary, video.width);
+                render_cornersStationary(corners, cornersStationary, countTot, data_u32Stationary, 640);
 
                 ctxxStationary.putImageData(imageDataStationary, 0, 0);
+
                 //Vi målar ut vad stationary punkterna visar(SLUT)
+
+                //Testa av att foga canny lines till det hele
+                drawCannyLines(ctxxStationary);
+                //Testa av att foga vcanny lines till det hele(SLUT)
 
                 //Jaha, här ska vi mäge in FAST(SLUT)
 
@@ -465,51 +478,76 @@
 
         //Vi glor in rörelserna i bilden vet jag
         function render_cornersStationary(corners, cornersStationary, count, img, step) {
-            var pix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
+            //Grundfärger
+            var bluePix = (0xff << 24) | (0xff << 16) | (0x00 << 8) | 0x00; //blue, ABGR
             var greenPix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00; //green, ABGR
-            var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //pink, ABGR
+            var redPix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
 
+            //Lite mer tésmetede färger
+            var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //pink, ABGR
+            var purplePix = (0xff << 24) | (0xff << 16) | (0x00 << 8) | 0xff; //pink, ABGR
+            var violetPix = (0xff << 24) | (0xaa << 16) | (0x00 << 8) | 0xff; //pink, ABGR
+
+            //Y räknare
+            var iMove = 0, jMove = 0;
 
             //Ride ud alle corners som träffar stationary points
-            for (var i = 0; i < count; ++i) {
-                var x = corners[i].x;
-                var y = corners[i].y;
+            for (iMove = 0; iMove < count; ++iMove) {
+                var x = corners[iMove].x;
+                var y = corners[iMove].y;
                 var off = (x + y * step);
-                if ((cornersStationary[off] > minValForStationary) && corners[i].score > minCornerScoreForStationary) {
+                if ((cornersStationary[off] > minValForStationary) && corners[iMove].score > minCornerScoreForStationary) {
                     img[off] = greenPix;
                     img[off - 1] = greenPix;
                     img[off + 1] = greenPix;
                     img[off - step] = greenPix;
                     img[off + step] = greenPix;
+
+                    //Kolla in rörelse
+                    greenSumX += x;
+                    greenSumY += y;
+                    greenCount++;
                 } else if (cornersStationary[off] > minValForStationary) {
-                    img[off] = pinkPix;
-                    img[off - 1] = pinkPix;
-                    img[off + 1] = pinkPix;
-                    img[off - step] = pinkPix;
-                    img[off + step] = pinkPix;
+                    img[off] = redPix;
+                    img[off - 1] = redPix;
+                    img[off + 1] = redPix;
+                    img[off - step] = redPix;
+                    img[off + step] = redPix;
                 }
             }
 
-            //Rött är liesom gamle punkter som INTE träffes men som
-            //TRÄFFADES förra framen, rörelse kort o gott. Bättre sådan.
-            for (i = 0; i < video.width * video.height; i++) {
-                var j = 0;
-
-                if ((i != 0) && (i % step == 0)) {
-                    j++;
-                }
-
-                var off = (i + j * step);
-                if (cornersStationary[i] == 3) {
-                    img[off] = pix;
-                    img[off - 1] = pix;
-                    img[off + 1] = pix;
-                    img[off - step] = pix;
-                    img[off + step] = pix;
-                }
-            }
         }
-        //Vi glor in rörelserna i bilden vet jag
+        //Vi glor in rörelserna i bilden vet jag(SLUT)
+
+        //Canny lines, ett måste
+        function drawCannyLines(ctxx) {
+            img_u8 = new jsfeat.matrix_t(640, 480, jsfeat.U8C1_t | jsfeat.C1_t);
+
+            var imageData = ctxx.getImageData(0, 0, 640, 480);
+
+            jsfeat.imgproc.grayscale(imageData.data, 640, 480, img_u8);
+
+            var r = 2; //options.blur_radius | 0;
+            var kernel_size = (r + 1) << 1;
+
+            jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+
+            jsfeat.imgproc.canny(img_u8, img_u8, 20, 50 /* options.low_threshold | 0, options.high_threshold | 0 */);
+
+            // render result back to canvas
+            var data_u32 = new Uint32Array(imageData.data.buffer);
+            var alpha = (0xff << 24);
+            var i = img_u8.cols * img_u8.rows, pix = 0;
+            while (--i >= 0) {
+                pix = img_u8.data[i];
+                if (pix > 0){
+                data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+                }
+            }
+
+            ctxx.putImageData(imageData, 0, 0);
+        }
+        //Canny lines, ett måste(SLUT)
 
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
         //OK, kan jag alltså böka in FAST corners här o vise liesom lite lätt?
