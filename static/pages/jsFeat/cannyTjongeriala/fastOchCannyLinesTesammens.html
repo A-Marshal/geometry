@@ -362,25 +362,6 @@
                     cornersStationary[off + video.width + 1] = stationaryCornerHitVal;
                 }
 
-                //Vi målar ut vad stationary punkterna visar
-
-                //Get video frame pixels
-                var canvasStationary = document.getElementById('testCanvas');
-                var ctxxStationary = canvasStationary.getContext("2d");
-                var data_u32Stationary = new Uint32Array(imageDataStationary.data.buffer);
-
-                render_cornersStationary(corners, cornersStationary, countTot, data_u32Stationary, 640);
-
-                ctxxStationary.putImageData(imageDataStationary, 0, 0);
-
-                //Vi målar ut vad stationary punkterna visar(SLUT)
-
-                //Testa av att foga canny lines till det hele
-                drawCannyLines(ctxxStationary);
-                //Testa av att foga vcanny lines till det hele(SLUT)
-
-                //Jaha, här ska vi mäge in FAST(SLUT)
-
                 //Vi mögar ud lidda info om'et heile
                 logElement.innerHTML = "# of FAST points: " + countTot;
 
@@ -432,6 +413,65 @@
                 ctx.strokeStyle = "white";
                 ctx.rect(options.roiX0, options.roiY0, options.roiWidth, options.roiHeight);
                 ctx.stroke();
+
+                //Vi målar ut vad stationary punkterna visar
+
+                //Get video frame pixels
+                var canvasStationary = document.getElementById('testCanvas');
+                var ctxxStationary = canvasStationary.getContext("2d");
+                var data_u32Stationary = new Uint32Array(imageDataStationary.data.buffer);
+
+                render_cornersStationary(corners, cornersStationary, countTot, data_u32Stationary, 640);
+
+                ctxxStationary.putImageData(imageDataStationary, 0, 0);
+
+                //Vi målar ut vad stationary punkterna visar(SLUT)
+
+                //Testa av att foga canny lines till det hele
+                drawCannyLines(ctxxStationary);
+                //Testa av att foga vcanny lines till det hele(SLUT)
+
+                //Avslutningsvis lägger vi fokusarerorna ovanpå alltehoppe
+                if (countLowTh > 2) {
+                    // Red rectangle
+                    ctxxStationary.beginPath();
+                    ctxxStationary.lineWidth = "3";
+                    ctxxStationary.strokeStyle = "red";
+                    ctxxStationary.rect(minLowThX, minLowThY, (maxLowThX - minLowThX), (maxLowThY - minLowThY));
+                    ctxxStationary.stroke();
+                    ctxxStationary.beginPath();
+                    ctxxStationary.arc(sumLowThX, sumLowThY, 8, 0, 2 * Math.PI);
+                    ctxxStationary.stroke();
+                }
+                if (countMidTh > 2) {
+                    // Green rectangle
+                    ctxxStationary.beginPath();
+                    ctxxStationary.strokeStyle = "green";
+                    ctxxStationary.rect(minMidThX, minMidThY, (maxMidThX - minMidThX), (maxMidThY - minMidThY));
+                    ctxxStationary.stroke();
+                    ctxxStationary.beginPath();
+                    ctxxStationary.arc(sumMidThX, sumMidThY, 8, 0, 2 * Math.PI);
+                    ctxxStationary.stroke();
+                }
+                if (countHiTh > 2) {
+                    // Blue rectangle
+                    ctxxStationary.beginPath();
+                    ctxxStationary.strokeStyle = "blue";
+                    ctxxStationary.rect(minHiThX, minHiThY, (maxHiThX - minHiThX), (maxHiThY - minHiThY));
+                    ctxxStationary.stroke();
+                    ctxxStationary.beginPath();
+                    ctxxStationary.arc(sumHiThX, sumHiThY, 8, 0, 2 * Math.PI);
+                    ctxxStationary.stroke();
+                }
+                //ROI rectangle
+                ctxxStationary.beginPath();
+                ctxxStationary.lineWidth = "1";
+                ctxxStationary.strokeStyle = "white";
+                ctxxStationary.rect(options.roiX0, options.roiY0, options.roiWidth, options.roiHeight);
+                ctxxStationary.stroke();
+
+                //Jaha, här ska vi mäge in FAST(SLUT)
+        
 
                 //Här skrifves då infon ud
                 logElement.innerHTML += "<br>Medelvärde alla FAST punkter X: " + sumTotalX.toFixed(2);
