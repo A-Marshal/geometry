@@ -160,11 +160,6 @@
         var stationaryNeighbourhood = 3;
         var minCornerScoreForStationary = 500;
 
-        //färg corner count variabler
-        var greenCornerCount = 0;
-        var greenCornerCountPrevious = 0;
-        var greenCornerCountBreak = 99; //NB: percent meant
-        var resetTracking = 0;
 
         //Init default values for options sliders
         threshold = 14;
@@ -220,10 +215,7 @@
             var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00; //green, ABGR
             var redPix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
             var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //red, ABGR
-            
-            greenCornerCountPrevious = greenCornerCount;
-            greenCornerCount = 0;
-            
+
             for (var i = 0; i < count; ++i) {
                 var x = corners[i].x;
                 var y = corners[i].y;
@@ -246,7 +238,6 @@
                     img[off + 1] = pix;
                     img[off - step] = pix;
                     img[off + step] = pix;
-                    greenCornerCount++;
                 }
             }
         }
@@ -369,18 +360,8 @@
                 var canvasStationary = document.getElementById('testCanvas');
                 var ctxxStationary = canvasStationary.getContext("2d");
                 var data_u32Stationary = new Uint32Array(imageDataStationary.data.buffer);
-                
-                if (resetTracking < 4) {
-                    resetTracking++;
-                }
 
-                if (((Math.abs(greenCornerCountPrevious - greenCornerCount)/greenCornerCountPrevious*100) > greenCornerCountBreak)) {
-                    resetTracking = 0;
-                }
-
-                if (resetTracking == 4) {
-                    render_cornersStationary(cornersStationary, countTot, data_u32Stationary, video.width);
-                }
+                render_cornersStationary(corners, cornersStationary, countTot, data_u32Stationary, video.width);
 
                 ctxxStationary.putImageData(imageDataStationary, 0, 0);
                 //Vi målar ut vad stationary punkterna visar(SLUT)
@@ -483,31 +464,48 @@
         //Ännu mera mina funktioner, nu ska vi möga té ROI
 
         //Vi glor in rörelserna i bilden vet jag
-        function render_cornersStationary(cornersStationary, count, img, step) {
-            var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00; //green, ABGR
-            var redPix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
-            var bluePix = (0xff << 24) | (0xff << 16) | (0x00 << 8) | 0x00; //blue, ABGR
-            var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //blue, ABGR
+        function render_cornersStationary(corners, cornersStationary, count, img, step) {
+            var pix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
+            var greenPix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00; //green, ABGR
+            var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //pink, ABGR
 
-            for (var i = 0; i < cornersStationary.length; ++i) {
-                switch (cornersStationary[i]) {
-                    case 0:
-                        //show image pixels as they are
-                        break;
-                    case 1:
-                        img[i] = bluePix;
-                        break;
-                    case 2:
-                        img[i] = pinkPix;
-                        break;
-                    case 3:
-                        img[i] = redPix;
-                        break;
-                    case 4:
-                        img[i] = pix;
-                        break;
-                    default:
-                    // code block
+
+            //Ride ud alle corners som träffar stationary points
+            for (var i = 0; i < count; ++i) {
+                var x = corners[i].x;
+                var y = corners[i].y;
+                var off = (x + y * step);
+                if ((cornersStationary[off] > minValForStationary) && corners[i].score > minCornerScoreForStationary) {
+                    img[off] = greenPix;
+                    img[off - 1] = greenPix;
+                    img[off + 1] = greenPix;
+                    img[off - step] = greenPix;
+                    img[off + step] = greenPix;
+                } else if (cornersStationary[off] > minValForStationary) {
+                    img[off] = pinkPix;
+                    img[off - 1] = pinkPix;
+                    img[off + 1] = pinkPix;
+                    img[off - step] = pinkPix;
+                    img[off + step] = pinkPix;
+                }
+            }
+
+            //Rött är liesom gamle punkter som INTE träffes men som
+            //TRÄFFADES förra framen, rörelse kort o gott. Bättre sådan.
+            for (i = 0; i < video.width * video.height; i++) {
+                var j = 0;
+
+                if ((i != 0) && (i % step == 0)) {
+                    j++;
+                }
+
+                var off = (i + j * step);
+                if (cornersStationary[i] == 3) {
+                    img[off] = pix;
+                    img[off - 1] = pix;
+                    img[off + 1] = pix;
+                    img[off - step] = pix;
+                    img[off + step] = pix;
                 }
             }
         }
