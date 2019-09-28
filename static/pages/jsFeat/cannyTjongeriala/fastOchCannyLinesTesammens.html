@@ -160,29 +160,21 @@
         var stationaryNeighbourhood = 3;
         var minCornerScoreForStationary = 500;
 
-        //Rörelsevariabler, gröna är nuvarande frames FAST som träffat föregående
-        //frames FAST indikationer.
-        //Blåa är FAST punkter som var fasta, d v s röda med hit val 4 i förra framen
-        //men som i nuvarande frame inte träffats alls av en FAST point
-        //d v s hitval är nu 3.
-        var greenSumX = 0, greenSumY = 0, greenCount = 0, greenMeanX = 0, greenMeanY = 0;
-        var blueSumX = 0, blueSumY = 0, blueCount, blueMeanX = 0, blueMeanY = 0;
-
 
         //Init default values for options sliders
         threshold = 14;
         roiWidth = 479;
         roiHeight = 271;
-        roiX0 = 83;
-        roiY0 = 166;
+        roiX0 = 69;
+        roiY0 = 57;
         minCornerScoreForStationary = 50;
 
         var demo_opt = function () {
             this.threshold = 14;
             this.roiWidth = 479;
             this.roiHeight = 271;
-            this.roiX0 = 83;
-            this.roiY0 = 166;
+            this.roiX0 = 69;
+            this.roiY0 = 57;
             this.minCornerScoreForStationary = 50;
         }
 
@@ -251,16 +243,48 @@
         }
 
         //mine fonketione
+
+        //Variabler för fokusareor, webcamFeed
+        var sumTotalX = 0, sumTotalY = 0, sumLowThX = 0, sumLowThXPrev = 0, sumLowThY = 0, sumLowThYPrev = 0;
+        var sumMidThX = 0, sumMidThXPrev = 0, sumMidThY = 0, sumMidThYPrev = 0;
+        var sumHiThX = 0, sumHiThXPrev = 0, sumHiThY = 0, sumHiThYPrev = 0;
+        var maxTotalX = -999, minTotalX = 999, maxTotalY = -999, minTotalY = 999;
+        var maxLowThX = -999, maxLowThXPrev = -999, minLowThX = 999, minLowThXPrev = 999, maxLowThY = -999, maxLowThYPrev = -999, minLowThY = 999, minLowThYPrev = 999;
+        var maxMidThX = -999, maxMidThXPrev = -999, minMidThX = 999, minMidThXPrev = 999, maxMidThY = -999, maxMidThYPrev = -999, minMidThY = 999, minMidThYPrev = 999;
+        var maxHiThX = -999, maxHiThXPrev = -999, minHiThX = 999, minHiThXPrev = 999, maxHiThY = -999, maxHiThYPrev = -999, minHiThY = 999, minHiThYPrev = 999;
+
         function webCamFeed(video) {
             setInterval(function () {
                 var canvas = document.getElementById('videoCanvas');
                 var ctxx = canvas.getContext("2d");
                 var i = 0;
-                var sumTotalX = 0, sumTotalY = 0, sumLowThX = 0, sumLowThY = 0, sumMidThX = 0, sumMidThY = 0, sumHiThX = 0, sumHiThY = 0;
-                var maxTotalX = -999, minTotalX = 999, maxTotalY = -999, minTotalY = 999;
-                var maxLowThX = -999, minLowThX = 999, maxLowThY = -999, minLowThY = 999;
-                var maxMidThX = -999, minMidThX = 999, maxMidThY = -999, minMidThY = 999;
-                var maxHiThX = -999, minHiThX = 999, maxHiThY = -999, minHiThY = 999;
+
+                //Initiera variabler för fokusareor
+                sumTotalX = 0;
+                sumTotalY = 0;
+                sumLowThX = 0;
+                sumLowThY = 0;
+                sumMidThX = 0;
+                sumMidThY = 0;
+                sumHiThX = 0;
+                sumHiThY = 0;
+                maxTotalX = -999;
+                minTotalX = 999;
+                maxTotalY = -999;
+                minTotalY = 999;
+                maxLowThX = -999;
+                minLowThX = 999;
+                maxLowThY = -999;
+                minLowThY = 999;
+                maxMidThX = -999;
+                minMidThX = 999;
+                maxMidThY = -999;
+                minMidThY = 999;
+                maxHiThX = -999;
+                minHiThX = 999;
+                maxHiThY = -999;
+                minHiThY = 999;
+                //Initiera variabler för fokusareor(SLUT)
 
                 //Draw video onto canvas, this is only to be able to obtain video pixels
                 ctxx.drawImage(video, 0, 0, video.width, video.height);
@@ -278,6 +302,26 @@
                 if (threshold != options.threshold) {
                     threshold = options.threshold | 0;
                     jsfeat.fast_corners.set_threshold(threshold);
+                }
+
+                //Update roiWidth from slider
+                if (roiWidth != options.roiWidth) {
+                    roiWidth = options.roiWidth | video.width;
+                }
+
+                //Update roiHeight from slider
+                if (roiHeight != options.roiHeight) {
+                    roiHeight = options.roiHeight | video.height;
+                }
+
+                //Update roiX0 from slider
+                if (roiX0 != options.roiX0) {
+                    roiX0 = options.roiX0 | 0;
+                }
+
+                //Update roiY0 from slider
+                if (roiY0 != options.roiY0) {
+                    roiY0 = options.roiY0 | 0;
                 }
 
                 //Update minCornerScoreForStationary from slider
@@ -317,6 +361,7 @@
                             minLowThX = Math.min(minLowThX, corners[i].x);
                             minLowThY = Math.min(minLowThY, corners[i].y);
                             countLowTh++;
+
                         } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
                             sumMidThX += corners[i].x;
                             sumMidThY += corners[i].y;
@@ -338,7 +383,7 @@
                 }
 
 
-                //Mine fonktione, för att färga stationäre punkter annerledes 
+                //Mine fonktione, för att färga stationäre punkter annerledes
 
                 // render result back to canvas
                 var data_u32 = new Uint32Array(imageData.data.buffer);
@@ -346,7 +391,9 @@
 
                 ctxx.putImageData(imageData, 0, 0);
 
-                //Testa o få till visa stationära pixlar, uti dé blå té'n börjen
+                //Ett område, 3 x 3 px stort, fylls med stationaryCornerHitVal
+                //i cornersStationaryarrayen för varje FAST punkt i corners
+                //senare sorteras punkter efter FAST score
                 for (i = 0; i < countTot; i++) {
                     var x = corners[i].x;
                     var y = corners[i].y;
@@ -373,15 +420,22 @@
                 if (countLowTh > 2) {
                     sumLowThX /= countLowTh;
                     sumLowThY /= countLowTh;
+
                     // Red rectangle
                     ctx.beginPath();
-                    ctx.lineWidth = "3";
+                    ctx.lineWidth = "2";
                     ctx.strokeStyle = "red";
                     ctx.rect(minLowThX, minLowThY, (maxLowThX - minLowThX), (maxLowThY - minLowThY));
                     ctx.stroke();
                     ctx.beginPath();
                     ctx.arc(sumLowThX, sumLowThY, 8, 0, 2 * Math.PI);
                     ctx.stroke();
+                    ctx.beginPath();
+                    ctx.strokeStyle = "#FFAAAA"
+                    ctx.arc(sumLowThXPrev, sumLowThYPrev, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
+
+
                 }
                 if (countMidTh > 2) {
                     sumMidThX /= countMidTh;
@@ -394,6 +448,10 @@
                     ctx.beginPath();
                     ctx.arc(sumMidThX, sumMidThY, 8, 0, 2 * Math.PI);
                     ctx.stroke();
+                    ctx.beginPath();
+                    ctx.strokeStyle = "#AAFFAA"
+                    ctx.arc(sumMidThXPrev, sumMidThYPrev, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
                 }
                 if (countHiTh > 2) {
                     sumHiThX /= countHiTh;
@@ -405,6 +463,10 @@
                     ctx.stroke();
                     ctx.beginPath();
                     ctx.arc(sumHiThX, sumHiThY, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.strokeStyle = "#AAAAFF"
+                    ctx.arc(sumHiThXPrev, sumHiThYPrev, 8, 0, 2 * Math.PI);
                     ctx.stroke();
                 }
                 //ROI rectangle
@@ -435,13 +497,18 @@
                 if (countLowTh > 2) {
                     // Red rectangle
                     ctxxStationary.beginPath();
-                    ctxxStationary.lineWidth = "3";
+                    ctxxStationary.lineWidth = "2";
                     ctxxStationary.strokeStyle = "red";
                     ctxxStationary.rect(minLowThX, minLowThY, (maxLowThX - minLowThX), (maxLowThY - minLowThY));
                     ctxxStationary.stroke();
                     ctxxStationary.beginPath();
                     ctxxStationary.arc(sumLowThX, sumLowThY, 8, 0, 2 * Math.PI);
                     ctxxStationary.stroke();
+                    ctxxStationary.beginPath();
+                    ctxxStationary.strokeStyle = "#FFAAAA";
+                    ctxxStationary.arc(sumLowThXPrev, sumLowThYPrev, 8, 0, 2 * Math.PI);
+                    ctxxStationary.stroke();
+
                 }
                 if (countMidTh > 2) {
                     // Green rectangle
@@ -451,6 +518,10 @@
                     ctxxStationary.stroke();
                     ctxxStationary.beginPath();
                     ctxxStationary.arc(sumMidThX, sumMidThY, 8, 0, 2 * Math.PI);
+                    ctxxStationary.stroke();
+                    ctxxStationary.beginPath();
+                    ctxxStationary.strokeStyle = "#AAFFAA";
+                    ctxxStationary.arc(sumMidThXPrev, sumMidThYPrev, 8, 0, 2 * Math.PI);
                     ctxxStationary.stroke();
                 }
                 if (countHiTh > 2) {
@@ -462,6 +533,10 @@
                     ctxxStationary.beginPath();
                     ctxxStationary.arc(sumHiThX, sumHiThY, 8, 0, 2 * Math.PI);
                     ctxxStationary.stroke();
+                    ctxxStationary.beginPath();
+                    ctxxStationary.strokeStyle = "#AAAAFF";
+                    ctxxStationary.arc(sumHiThXPrev, sumHiThYPrev, 8, 0, 2 * Math.PI);
+                    ctxxStationary.stroke();
                 }
                 //ROI rectangle
                 ctxxStationary.beginPath();
@@ -470,8 +545,22 @@
                 ctxxStationary.rect(options.roiX0, options.roiY0, options.roiWidth, options.roiHeight);
                 ctxxStationary.stroke();
 
+                //Update frame geometry variables
+                sumLowThXPrev = sumLowThX;
+                sumLowThYPrev = sumLowThY;
+                sumMidThXPrev = sumMidThX;
+                sumMidThYPrev = sumMidThY;
+                sumHiThXPrev = sumHiThX;
+                sumHiThYPrev = sumHiThY;
+                minLowThXPrev = minLowThX;
+                maxLowThYPrev = maxLowThX;
+                minLowThYPrev = minLowThY;
+                maxLowThYPrev = maxLowThY;
+                maxMidThXPrev = maxMidThX;
+                //Update frame geometry variables(SLUT)
+
                 //Jaha, här ska vi mäge in FAST(SLUT)
-        
+
 
                 //Här skrifves då infon ud
                 logElement.innerHTML += "<br>Medelvärde alla FAST punkter X: " + sumTotalX.toFixed(2);
@@ -485,12 +574,7 @@
             }, 200);
         }
 
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
+
 
         //Är en corner pixel inom ROI?
         function withinROI(i) {
@@ -508,13 +592,6 @@
 
             return isWithin;
         }
-
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
-        //Ännu mera mina funktioner, nu ska vi möga té ROI
 
         //Vi glor in rörelserna i bilden vet jag
         function render_cornersStationary(corners, cornersStationary, count, img, step) {
@@ -542,11 +619,6 @@
                     img[off + 1] = greenPix;
                     img[off - step] = greenPix;
                     img[off + step] = greenPix;
-
-                    //Kolla in rörelse
-                    greenSumX += x;
-                    greenSumY += y;
-                    greenCount++;
                 } else if (cornersStationary[off] > minValForStationary) {
                     img[off] = redPix;
                     img[off - 1] = redPix;
@@ -580,8 +652,8 @@
             var i = img_u8.cols * img_u8.rows, pix = 0;
             while (--i >= 0) {
                 pix = img_u8.data[i];
-                if (pix > 0){
-                data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+                if (pix > 0) {
+                    data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
                 }
             }
 
