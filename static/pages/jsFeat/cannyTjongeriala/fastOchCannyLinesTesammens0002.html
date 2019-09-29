@@ -69,7 +69,7 @@
         }
     </style>
 
-    <title>Capabilities, constraints, and settings - Example_Constraint_exerciser - code sample</title>
+    <title>Canny & FAST tjongeriala</title>
 </head>
 
 <body>
@@ -158,7 +158,7 @@
         var stationaryCornerHitVal = 4
         var minValForStationary = 1;
         var stationaryNeighbourhood = 3;
-        var minCornerScoreForStationary = 500;
+        var minCornerScoreForStationary = 50;
 
 
         //Init default values for options sliders
@@ -253,6 +253,70 @@
         var maxMidThX = -999, maxMidThXPrev = -999, minMidThX = 999, minMidThXPrev = 999, maxMidThY = -999, maxMidThYPrev = -999, minMidThY = 999, minMidThYPrev = 999;
         var maxHiThX = -999, maxHiThXPrev = -999, minHiThX = 999, minHiThXPrev = 999, maxHiThY = -999, maxHiThYPrev = -999, minHiThY = 999, minHiThYPrev = 999;
 
+        //Variabler för fokusareors kvadranter, webcamFeed, röd fokusarea
+        var sumLowThXQ = [];
+        var sumLowThXQPrev = [];
+        sumLowThXQPrev = [0, 0, 0, 0, 0];
+        var sumLowThYQ = [];
+        var sumLowThYQPrev = [];
+        sumLowThYQPrev = [0, 0, 0, 0, 0];
+        var maxLowThXQ = [];
+        var maxLowThXQPrev = [];
+        maxLowThXQPrev = [-999, -999, -999, -999, -999];
+        var minLowThXQ = [];
+        var minLowThXQPrev = [];
+        minLowThXQPrev = [999, 999, 999, 999, 999];
+        var maxLowThYQ = [];
+        var maxLowThYQPrev = [];
+        maxLowThYQPrev = [-999, -999, -999, -999, -999];
+        var minLowThYQ = [];
+        var minLowThYQPrev = [];
+        minLowThYQPrev = [-999, -999, -999, -999, -999];
+        //Variabler för fokusareors kvadranter, webcamFeed, röd fokusarea(SLUT)
+
+        //Variabler för fokusareors kvadranter, webcamFeed, grön fokusarea
+        var sumMidThXQ = [];
+        var sumMidThXQPrev = [];
+        sumMidThXQPrev = [0, 0, 0, 0, 0];
+        var sumMidThYQ = [];
+        var sumMidThYQPrev = [];
+        sumMidThYQPrev = [0, 0, 0, 0, 0];
+        var maxMidThXQ = [];
+        var maxMidThXQPrev = [];
+        maxMidThXQPrev = [-999, -999, -999, -999, -999];
+        var minMidThXQ = [];
+        var minMidThXQPrev = [];
+        minMidThXQPrev = [999, 999, 999, 999, 999];
+        var maxMidThYQ = [];
+        var maxMidThYQPrev = [];
+        maxMidThYQPrev = [-999, -999, -999, -999, -999];
+        var minMidThYQ = [];
+        var minMidThYQPrev = [];
+        minMidThYQPrev = [-999, -999, -999, -999, -999];
+        //Variabler för fokusareors kvadranter, webcamFeed, grön fokusarea(SLUT)
+
+        //Variabler för fokusareors kvadranter, webcamFeed, blå fokusarea
+        var sumHiThXQ = [];
+        var sumHiThXQPrev = [];
+        sumHiThXQPrev = [0, 0, 0, 0, 0];
+        var sumHiThYQ = [];
+        var sumHiThYQPrev = [];
+        sumHiThYQPrev = [0, 0, 0, 0, 0];
+        var maxHiThXQ = [];
+        var maxHiThXQPrev = [];
+        maxHiThXQPrev = [-999, -999, -999, -999, -999];
+        var minHiThXQ = [];
+        var minHiThXQPrev = [];
+        minHiThXQPrev = [999, 999, 999, 999, 999];
+        var maxHiThYQ = [];
+        var maxHiThYQPrev = [];
+        maxHiThYQPrev = [-999, -999, -999, -999, -999];
+        var minHiThYQ = [];
+        var minHiThYQPrev = [];
+        minHiThYQPrev = [-999, -999, -999, -999, -999];
+        //Variabler för fokusareors kvadranter, webcamFeed, blå fokusarea(SLUT)
+
+
         function webCamFeed(video) {
             setInterval(function () {
                 var canvas = document.getElementById('videoCanvas');
@@ -285,6 +349,33 @@
                 maxHiThY = -999;
                 minHiThY = 999;
                 //Initiera variabler för fokusareor(SLUT)
+
+                //Initiera variabler för fokusareors kvadranter, röd
+                sumLowThXQ = [0, 0, 0, 0, 0];
+                sumLowThYQ = [0, 0, 0, 0, 0];
+                maxLowThXQ = [-999, -999, -999, -999, -999];
+                minLowThXQ = [999, 999, 999, 999, 999];
+                maxLowThYQ = [-999, -999, -999, -999, -999];
+                minLowThYQ = [999, 999, 999, 999, 999];
+                //Initiera variabler för fokusareors kvadranter, röd(SLUT)
+
+                //Initiera variabler för fokusareors kvadranter, grön
+                sumMidThXQ = [0, 0, 0, 0, 0];
+                sumMidThYQ = [0, 0, 0, 0, 0];
+                maxMidThXQ = [-999, -999, -999, -999, -999];
+                minMidThXQ = [999, 999, 999, 999, 999];
+                maxMidThYQ = [-999, -999, -999, -999, -999];
+                minMidThYQ = [999, 999, 999, 999, 999];
+                //Initiera variabler för fokusareors kvadranter, grön(SLUT)
+
+                //Initiera variabler för fokusareors kvadranter, blå
+                sumHiThXQ = [0, 0, 0, 0, 0];
+                sumHiThYQ = [0, 0, 0, 0, 0];
+                maxHiThXQ = [-999, -999, -999, -999, -999];
+                minHiThXQ = [999, 999, 999, 999, 999];
+                maxHiThYQ = [-999, -999, -999, -999, -999];
+                minHiThYQ = [999, 999, 999, 999, 999];
+                //Initiera variabler för fokusareors kvadranter, blå(SLUT)
 
                 //Draw video onto canvas, this is only to be able to obtain video pixels
                 ctxx.drawImage(video, 0, 0, video.width, video.height);
@@ -334,6 +425,14 @@
                 var countTot = jsfeat.fast_corners.detect(img_u8, corners, 5);
                 var countHiTh = 0, countMidTh = 0, countLowTh = 0;
 
+                var countLowThQ = [];
+                var countMidThQ = [];
+                var countHiThQ = [];
+
+                countLowThQ = [0, 0, 0, 0, 0];
+                countMidThQ = [0, 0, 0, 0, 0];
+                countHiThQ = [0, 0, 0, 0, 0];
+
                 //Mine fonktione, för att färga stationäre punkter annerledes
                 //Corners stationary, array med punkter över områden med FAST
                 //punkter i förra framen
@@ -382,6 +481,44 @@
                     }
                 }
 
+                //Räkna ut geo. medelvärden för fokusareornas kvadranter
+                for (i = 0; i < countTot; i++) {
+                    //Erhåll fokusareor
+                    if ((withinROI(i))) {
+                        var quadrant;
+
+                        if ((corners[i].score > 20) && (corners[i].score < 40)) {
+                            quadrant = obtainRedQuadrant(corners, i);
+                            sumLowThXQ[quadrant] += corners[i].x;
+                            sumLowThYQ[quadrant] += corners[i].y;
+                            maxLowThXQ[quadrant] = Math.max(maxLowThXQ[quadrant], corners[i].x);
+                            maxLowThYQ[quadrant] = Math.max(maxLowThYQ[quadrant], corners[i].y);
+                            minLowThXQ[quadrant] = Math.min(minLowThXQ[quadrant], corners[i].x);
+                            minLowThYQ[quadrant] = Math.min(minLowThYQ[quadrant], corners[i].y);
+                            countLowThQ[quadrant] += 1;
+
+                        } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
+                            quadrant = obtainGreenQuadrant(corners, i);
+                            sumMidThXQ[quadrant] += corners[i].x;
+                            sumMidThYQ[quadrant] += corners[i].y;
+                            maxMidThXQ[quadrant] = Math.max(maxMidThXQ[quadrant], corners[i].x);
+                            maxMidThYQ[quadrant] = Math.max(maxMidThYQ[quadrant], corners[i].y);
+                            minMidThXQ[quadrant] = Math.min(minMidThXQ[quadrant], corners[i].x);
+                            minMidThYQ[quadrant] = Math.min(minMidThYQ[quadrant], corners[i].y);
+                            countMidThQ[quadrant] += 1;
+                        } else if (corners[i].score > 61) {
+                            quadrant = obtainGreenQuadrant(corners, i);
+                            sumHiThXQ[quadrant] += corners[i].x;
+                            sumHiThYQ[quadrant] += corners[i].y;
+                            maxHiThXQ[quadrant] = Math.max(maxHiThXQ[quadrant], corners[i].x);
+                            maxHiThYQ[quadrant] = Math.max(maxHiThYQ[quadrant], corners[i].y);
+                            minHiThXQ[quadrant] = Math.min(minHiThXQ[quadrant], corners[i].x);
+                            minHiThYQ[quadrant] = Math.min(minHiThYQ[quadrant], corners[i].y);
+                            countHiThQ[quadrant] += 1;
+                        }
+                    }
+                }
+                //Räkna ut geo. medelvärden för fokusareornas kvadranter(SLUT)
 
                 //Mine fonktione, för att färga stationäre punkter annerledes
 
@@ -421,12 +558,28 @@
                     sumLowThX /= countLowTh;
                     sumLowThY /= countLowTh;
 
+                    //Räkna ut centrum för geometriska medelvärden i kvadranterna
+                    for (var i = 0; i < 4; i++) {
+                        sumLowThXQ[i] /= countLowThQ[i];
+                        sumLowThYQ[i] /= countLowThQ[i];
+                    }
+
                     // Red rectangle
                     ctx.beginPath();
                     ctx.lineWidth = "2";
                     ctx.strokeStyle = "red";
                     ctx.rect(minLowThX, minLowThY, (maxLowThX - minLowThX), (maxLowThY - minLowThY));
                     ctx.stroke();
+                    //Röda rektangelns centerlijer
+                    ctx.beginPath();
+                    ctx.moveTo((minLowThX + (maxLowThX - minLowThX) / 2), minLowThY);
+                    ctx.lineTo((minLowThX + (maxLowThX - minLowThX) / 2), maxLowThY);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(minLowThX, (minLowThY + (maxLowThY - minLowThY) / 2));
+                    ctx.lineTo(maxLowThX, (minLowThY + (maxLowThY - minLowThY) / 2));
+                    ctx.stroke();
+                    //Röda rektangelns centerlijer(SLUT)
                     ctx.beginPath();
                     ctx.arc(sumLowThX, sumLowThY, 8, 0, 2 * Math.PI);
                     ctx.stroke();
@@ -434,17 +587,32 @@
                     ctx.strokeStyle = "#FFAAAA"
                     ctx.arc(sumLowThXPrev, sumLowThYPrev, 8, 0, 2 * Math.PI);
                     ctx.stroke();
-
-
                 }
                 if (countMidTh > 2) {
                     sumMidThX /= countMidTh;
                     sumMidThY /= countMidTh;
+
+                    //Räkna ut centrum för geometriska medelvärden i kvadranterna
+                    for (var i = 0; i < 4; i++) {
+                        sumMidThXQ[i] /= countMidThQ[i];
+                        sumMidThYQ[i] /= countMidThQ[i];
+                    }
+
                     // Green rectangle
                     ctx.beginPath();
                     ctx.strokeStyle = "green";
                     ctx.rect(minMidThX, minMidThY, (maxMidThX - minMidThX), (maxMidThY - minMidThY));
                     ctx.stroke();
+                    //Gröna rektangelns centerlijer
+                    ctx.beginPath();
+                    ctx.moveTo((minMidThX + (maxMidThX - minMidThX) / 2), minMidThY);
+                    ctx.lineTo((minMidThX + (maxMidThX - minMidThX) / 2), maxMidThY);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(minMidThX, (minMidThY + (maxMidThY - minMidThY) / 2));
+                    ctx.lineTo(maxLowThX, (minMidThY + (maxMidThY - minMidThY) / 2));
+                    ctx.stroke();
+                    //Gröna rektangelns centerlijer(SLUT)
                     ctx.beginPath();
                     ctx.arc(sumMidThX, sumMidThY, 8, 0, 2 * Math.PI);
                     ctx.stroke();
@@ -456,11 +624,28 @@
                 if (countHiTh > 2) {
                     sumHiThX /= countHiTh;
                     sumHiThY /= countHiTh;
+
+                    //Räkna ut centrum för geometriska medelvärden i kvadranterna
+                    for (var i = 0; i < 4; i++) {
+                        sumHiThXQ[i] /= countHiThQ[i];
+                        sumHiThYQ[i] /= countHiThQ[i];
+                    }
+
                     // Blue rectangle
                     ctx.beginPath();
                     ctx.strokeStyle = "blue";
                     ctx.rect(minHiThX, minHiThY, (maxHiThX - minHiThX), (maxHiThY - minHiThY));
                     ctx.stroke();
+                    //Blåa rektangelns centerlijer
+                    ctx.beginPath();
+                    ctx.moveTo((minHiThX + (maxHiThX - minHiThX) / 2), minHiThY);
+                    ctx.lineTo((minHiThX + (maxHiThX - minHiThX) / 2), maxHiThY);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(minHiThX, (minHiThY + (maxHiThY - minHiThY) / 2));
+                    ctx.lineTo(maxHiThX, (minHiThY + (maxHiThY - minHiThY) / 2));
+                    ctx.stroke();
+                    //Blåa rektangelns centerlijer(SLUT)
                     ctx.beginPath();
                     ctx.arc(sumHiThX, sumHiThY, 8, 0, 2 * Math.PI);
                     ctx.stroke();
@@ -501,13 +686,33 @@
                     ctxxStationary.strokeStyle = "red";
                     ctxxStationary.rect(minLowThX, minLowThY, (maxLowThX - minLowThX), (maxLowThY - minLowThY));
                     ctxxStationary.stroke();
+                    //Röda rektangelns centerlijer
                     ctxxStationary.beginPath();
-                    ctxxStationary.arc(sumLowThX, sumLowThY, 8, 0, 2 * Math.PI);
+                    ctxxStationary.moveTo((minLowThX + (maxLowThX - minLowThX) / 2), minLowThY);
+                    ctxxStationary.lineTo((minLowThX + (maxLowThX - minLowThX) / 2), maxLowThY);
                     ctxxStationary.stroke();
                     ctxxStationary.beginPath();
+                    ctxxStationary.moveTo(minLowThX, (minLowThY + (maxLowThY - minLowThY) / 2));
+                    ctxxStationary.lineTo(maxLowThX, (minLowThY + (maxLowThY - minLowThY) / 2));
+                    ctxxStationary.stroke();
+                    //Röda rektangelns centerlijer(SLUT)
+
+                    //Rite ut kvadranternas nuvarande centercirklar
+                    for (var i = 0; i < 4; i++) {
+                        ctxxStationary.beginPath();
+                        ctxxStationary.arc(sumLowThXQ[i], sumLowThYQ[i], 8, 0, 2 * Math.PI);
+                        ctxxStationary.stroke();
+                    }
+                    //Rite ut kvadranternas nuvarande centercirklar(SLUT)
+
+                    //Rite ut kvadranternas föregående centercirklar
                     ctxxStationary.strokeStyle = "#FFAAAA";
-                    ctxxStationary.arc(sumLowThXPrev, sumLowThYPrev, 8, 0, 2 * Math.PI);
-                    ctxxStationary.stroke();
+                    for (var i = 0; i < 4; i++) {
+                        ctxxStationary.beginPath();
+                        ctxxStationary.arc(sumLowThXQPrev[i], sumLowThYQPrev[i], 8, 0, 2 * Math.PI);
+                        ctxxStationary.stroke();
+                    }
+                    //Rite ut kvadranternas föregående centercirklar(SLUT)
 
                 }
                 if (countMidTh > 2) {
@@ -516,13 +721,33 @@
                     ctxxStationary.strokeStyle = "green";
                     ctxxStationary.rect(minMidThX, minMidThY, (maxMidThX - minMidThX), (maxMidThY - minMidThY));
                     ctxxStationary.stroke();
+                    //Gröna rektangelns centerlijer
                     ctxxStationary.beginPath();
-                    ctxxStationary.arc(sumMidThX, sumMidThY, 8, 0, 2 * Math.PI);
+                    ctxxStationary.moveTo((minMidThX + (maxMidThX - minMidThX) / 2), minMidThY);
+                    ctxxStationary.lineTo((minMidThX + (maxMidThX - minMidThX) / 2), maxMidThY);
                     ctxxStationary.stroke();
                     ctxxStationary.beginPath();
+                    ctxxStationary.moveTo(minMidThX, (minMidThY + (maxMidThY - minMidThY) / 2));
+                    ctxxStationary.lineTo(maxLowThX, (minMidThY + (maxMidThY - minMidThY) / 2));
+                    ctxxStationary.stroke();
+                    //Gröna rektangelns centerlijer(SLUT)
+
+                    //Rite ut kvadranternas nuvarande centercirklar
+                    for (var i = 0; i < 4; i++) {
+                        ctxxStationary.beginPath();
+                        ctxxStationary.arc(sumMidThXQ[i], sumMidThYQ[i], 8, 0, 2 * Math.PI);
+                        ctxxStationary.stroke();
+                    }
+                    //Rite ut kvadranternas nuvarande centercirklar(SLUT)
+
+                    //Rite ut kvadranternas föregående centercirklar
                     ctxxStationary.strokeStyle = "#AAFFAA";
-                    ctxxStationary.arc(sumMidThXPrev, sumMidThYPrev, 8, 0, 2 * Math.PI);
-                    ctxxStationary.stroke();
+                    for (var i = 0; i < 4; i++) {
+                        ctxxStationary.beginPath();
+                        ctxxStationary.arc(sumMidThXQPrev[i], sumMidThYQPrev[i], 8, 0, 2 * Math.PI);
+                        ctxxStationary.stroke();
+                    }
+                    //Rite ut kvadranternas föregående centercirklar(SLUT)
                 }
                 if (countHiTh > 2) {
                     // Blue rectangle
@@ -530,13 +755,33 @@
                     ctxxStationary.strokeStyle = "blue";
                     ctxxStationary.rect(minHiThX, minHiThY, (maxHiThX - minHiThX), (maxHiThY - minHiThY));
                     ctxxStationary.stroke();
+                    //Blåa rektangelns centerlijer
                     ctxxStationary.beginPath();
-                    ctxxStationary.arc(sumHiThX, sumHiThY, 8, 0, 2 * Math.PI);
+                    ctxxStationary.moveTo((minHiThX + (maxHiThX - minHiThX) / 2), minHiThY);
+                    ctxxStationary.lineTo((minHiThX + (maxHiThX - minHiThX) / 2), maxHiThY);
                     ctxxStationary.stroke();
                     ctxxStationary.beginPath();
+                    ctxxStationary.moveTo(minHiThX, (minHiThY + (maxHiThY - minHiThY) / 2));
+                    ctxxStationary.lineTo(maxHiThX, (minHiThY + (maxHiThY - minHiThY) / 2));
+                    ctxxStationary.stroke();
+                    //Blåa rektangelns centerlijer(SLUT)
+
+                    //Rite ut kvadranternas nuvarande centercirklar
+                    for (var i = 0; i < 4; i++) {
+                        ctxxStationary.beginPath();
+                        ctxxStationary.arc(sumHiThXQ[i], sumHiThYQ[i], 8, 0, 2 * Math.PI);
+                        ctxxStationary.stroke();
+                    }
+                    //Rite ut kvadranternas nuvarande centercirklar(SLUT)
+
+                    //Rite ut kvadranternas föregående centercirklar
                     ctxxStationary.strokeStyle = "#AAAAFF";
-                    ctxxStationary.arc(sumHiThXPrev, sumHiThYPrev, 8, 0, 2 * Math.PI);
-                    ctxxStationary.stroke();
+                    for (var i = 0; i < 4; i++) {
+                        ctxxStationary.beginPath();
+                        ctxxStationary.arc(sumHiThXQPrev[i], sumHiThYQPrev[i], 8, 0, 2 * Math.PI);
+                        ctxxStationary.stroke();
+                    }
+                    //Rite ut kvadranternas föregående centercirklar(SLUT)
                 }
                 //ROI rectangle
                 ctxxStationary.beginPath();
@@ -559,6 +804,27 @@
                 maxMidThXPrev = maxMidThX;
                 //Update frame geometry variables(SLUT)
 
+                //Update frame quadrant geometry variables
+                for (var i = 0; i < 4; i++) {
+                    sumLowThXQPrev[i] = sumLowThXQ[i];
+                    sumLowThYQPrev[i] = sumLowThYQ[i];
+                }
+                //Update frame quadrant geometry variables(SLUT)
+
+                //Update frame quadrant geometry variables
+                for (var i = 0; i < 4; i++) {
+                    sumMidThXQPrev[i] = sumMidThXQ[i];
+                    sumMidThYQPrev[i] = sumMidThYQ[i];
+                }
+                //Update frame quadrant geometry variables(SLUT)
+
+                //Update frame quadrant geometry variables
+                for (var i = 0; i < 4; i++) {
+                    sumHiThXQPrev[i] = sumHiThXQ[i];
+                    sumHiThYQPrev[i] = sumHiThYQ[i];
+                }
+                //Update frame quadrant geometry variables(SLUT)
+
                 //Jaha, här ska vi mäge in FAST(SLUT)
 
 
@@ -571,7 +837,7 @@
                 logElement.innerHTML += "<br>Medelvärde FAST punkter med mellan score, Y: " + sumMidThY.toFixed(2);
                 logElement.innerHTML += "<br>Medelvärde FAST punkter med hög score, X: " + sumHiThX.toFixed(2);
                 logElement.innerHTML += "<br>Medelvärde FAST punkter med hög score, Y: " + sumHiThY.toFixed(2);
-            }, 100);
+            }, 200);
         }
 
 
@@ -591,6 +857,85 @@
             }
 
             return isWithin;
+        }
+
+        //Inom vilken kvadrant i röda ROI'en ligger en FAST punkt?
+        function obtainRedQuadrant(corners, i) {
+            var quadrant = 4;
+
+            //1st quadrant
+            if ((corners[i].x > minLowThX) && (corners[i].x < parseInt(minLowThX + (maxLowThX - minLowThX) / 2)) && (corners[i].y > minLowThY) && (corners[i].y < parseInt(minLowThY + (maxLowThY - minLowThY) / 2))) {
+                quadrant = 0;
+            }
+
+            //2nd quadrant
+            if ((corners[i].x > (parseInt(minLowThX + (maxLowThX - minLowThX) / 2)) && (corners[i].x < maxLowThX) && (corners[i].y > minLowThY) && (corners[i].y < parseInt(minLowThY + (maxLowThY - minLowThY) / 2)))) {
+                quadrant = 1;
+            }
+
+            //3rd quadrant
+            if ((corners[i].x > minLowThX) && (corners[i].x < parseInt(minLowThX + (maxLowThX - minLowThX) / 2)) && (corners[i].y > parseInt(minLowThY + (maxLowThY - minLowThY) / 2)) && (corners[i].y < maxLowThY)) {
+                quadrant = 2;
+            }
+
+            //3rd quadrant
+            if ((corners[i].x > (parseInt(minLowThX + (maxLowThX - minLowThX) / 2)) && (corners[i].x < maxLowThX) && (corners[i].y > parseInt(minLowThY + (maxLowThY - minLowThY) / 2)) && (corners[i].y < maxLowThY))) {
+                quadrant = 3;
+            }
+
+            return quadrant;
+        }
+
+        function obtainGreenQuadrant(corners, i) {
+            var quadrant = 4;
+
+            //1st quadrant
+            if ((corners[i].x > minMidThX) && (corners[i].x < parseInt(minMidThX + (maxMidThX - minMidThX) / 2)) && (corners[i].y > minMidThY) && (corners[i].y < parseInt(minMidThY + (maxMidThY - minMidThY) / 2))) {
+                quadrant = 0;
+            }
+
+            //2nd quadrant
+            if ((corners[i].x > (parseInt(minMidThX + (maxMidThX - minMidThX) / 2)) && (corners[i].x < maxMidThX) && (corners[i].y > minMidThY) && (corners[i].y < parseInt(minMidThY + (maxMidThY - minMidThY) / 2)))) {
+                quadrant = 1;
+            }
+
+            //3rd quadrant
+            if ((corners[i].x > minMidThX) && (corners[i].x < parseInt(minMidThX + (maxMidThX - minMidThX) / 2)) && (corners[i].y > parseInt(minMidThY + (maxMidThY - minMidThY) / 2)) && (corners[i].y < maxMidThY)) {
+                quadrant = 2;
+            }
+
+            //3rd quadrant
+            if ((corners[i].x > (parseInt(minMidThX + (maxMidThX - minMidThX) / 2)) && (corners[i].x < maxMidThX) && (corners[i].y > parseInt(minMidThY + (maxMidThY - minMidThY) / 2)) && (corners[i].y < maxMidThY))) {
+                quadrant = 3;
+            }
+
+            return quadrant;
+        }
+
+        function obtainBlueQuadrant(corners, i) {
+            var quadrant = 4;
+
+            //1st quadrant
+            if ((corners[i].x > minHiThX) && (corners[i].x < parseInt(minHiThX + (maxHiThX - minHiThX) / 2)) && (corners[i].y > minHiThY) && (corners[i].y < parseInt(minHiThY + (maxHiThY - minHiThY) / 2))) {
+                quadrant = 0;
+            }
+
+            //2nd quadrant
+            if ((corners[i].x > (parseInt(minHiThX + (maxHiThX - minHiThX) / 2)) && (corners[i].x < maxHiThX) && (corners[i].y > minHiThY) && (corners[i].y < parseInt(minHiThY + (maxHiThY - minHiThY) / 2)))) {
+                quadrant = 1;
+            }
+
+            //3rd quadrant
+            if ((corners[i].x > minHiThX) && (corners[i].x < parseInt(minHiThX + (maxHiThX - minHiThX) / 2)) && (corners[i].y > parseInt(minHiThY + (maxHiThY - minHiThY) / 2)) && (corners[i].y < maxHiThY)) {
+                quadrant = 2;
+            }
+
+            //3rd quadrant
+            if ((corners[i].x > (parseInt(minHiThX + (maxHiThX - minHiThX) / 2)) && (corners[i].x < maxHiThX) && (corners[i].y > parseInt(minHiThY + (maxHiThY - minHiThY) / 2)) && (corners[i].y < maxHiThY))) {
+                quadrant = 3;
+            }
+
+            return quadrant;
         }
 
         //Vi glor in rörelserna i bilden vet jag
