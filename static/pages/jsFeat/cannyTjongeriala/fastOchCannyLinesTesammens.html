@@ -613,18 +613,30 @@
                 var x = corners[iMove].x;
                 var y = corners[iMove].y;
                 var off = (x + y * step);
-                if ((cornersStationary[off] > minValForStationary) && corners[iMove].score > minCornerScoreForStationary) {
+                if ((cornersStationary[off] > 2) && corners[iMove].score > minCornerScoreForStationary) {
                     img[off] = greenPix;
                     img[off - 1] = greenPix;
                     img[off + 1] = greenPix;
                     img[off - step] = greenPix;
                     img[off + step] = greenPix;
-                } else if (cornersStationary[off] > minValForStationary) {
+                } else if ((cornersStationary[off] > minValForStationary) && corners[iMove].score > minCornerScoreForStationary) {
                     img[off] = redPix;
                     img[off - 1] = redPix;
                     img[off + 1] = redPix;
                     img[off - step] = redPix;
                     img[off + step] = redPix;
+                } else if (cornersStationary[off] > minValForStationary) {
+                    img[off] = pinkPix;
+                    img[off - 1] = pinkPix;
+                    img[off + 1] = pinkPix;
+                    img[off - step] = pinkPix;
+                    img[off + step] = pinkPix;
+                } else {
+                    img[off] = greenPix;
+                    img[off - 1] = greenPix;
+                    img[off + 1] = greenPix;
+                    img[off - step] = greenPix;
+                    img[off + step] = greenPix;
                 }
             }
 
