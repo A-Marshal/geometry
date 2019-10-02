@@ -5,93 +5,93 @@ const videoWidth = 640;
 const videoHeight = 480;
 
 //Variabler för fokusareor, webcamFeed
-var sumTotalX = 0, sumTotalY = 0, sumLowThX = 0, sumLowThXPrev = 0, sumLowThY = 0, sumLowThYPrev = 0;
-var sumMidThX = 0, sumMidThXPrev = 0, sumMidThY = 0, sumMidThYPrev = 0;
-var sumHiThX = 0, sumHiThXPrev = 0, sumHiThY = 0, sumHiThYPrev = 0;
-var maxTotalX = -999, minTotalX = 999, maxTotalY = -999, minTotalY = 999;
-var maxLowThX = -999, maxLowThXPrev = -999, minLowThX = 999, minLowThXPrev = 999, maxLowThY = -999, maxLowThYPrev = -999, minLowThY = 999, minLowThYPrev = 999;
-var maxMidThX = -999, maxMidThXPrev = -999, minMidThX = 999, minMidThXPrev = 999, maxMidThY = -999, maxMidThYPrev = -999, minMidThY = 999, minMidThYPrev = 999;
-var maxHiThX = -999, maxHiThXPrev = -999, minHiThX = 999, minHiThXPrev = 999, maxHiThY = -999, maxHiThYPrev = -999, minHiThY = 999, minHiThYPrev = 999;
+let sumTotalX = 0, sumTotalY = 0, sumLowThX = 0, sumLowThXPrev = 0, sumLowThY = 0, sumLowThYPrev = 0;
+let sumMidThX = 0, sumMidThXPrev = 0, sumMidThY = 0, sumMidThYPrev = 0;
+let sumHiThX = 0, sumHiThXPrev = 0, sumHiThY = 0, sumHiThYPrev = 0;
+let maxTotalX = -999, minTotalX = 999, maxTotalY = -999, minTotalY = 999;
+let maxLowThX = -999, maxLowThXPrev = -999, minLowThX = 999, minLowThXPrev = 999, maxLowThY = -999, maxLowThYPrev = -999, minLowThY = 999, minLowThYPrev = 999;
+let maxMidThX = -999, maxMidThXPrev = -999, minMidThX = 999, minMidThXPrev = 999, maxMidThY = -999, maxMidThYPrev = -999, minMidThY = 999, minMidThYPrev = 999;
+let maxHiThX = -999, maxHiThXPrev = -999, minHiThX = 999, minHiThXPrev = 999, maxHiThY = -999, maxHiThYPrev = -999, minHiThY = 999, minHiThYPrev = 999;
 
 //Variabler för fokusareors kvadranter, webcamFeed, röd fokusarea
-var sumLowThXQ = [];
-var sumLowThXQPrev = [];
+let sumLowThXQ = [];
+let sumLowThXQPrev = [];
 sumLowThXQPrev = [0, 0, 0, 0, 0];
-var sumLowThYQ = [];
-var sumLowThYQPrev = [];
+let sumLowThYQ = [];
+let sumLowThYQPrev = [];
 sumLowThYQPrev = [0, 0, 0, 0, 0];
-var maxLowThXQ = [];
-var maxLowThXQPrev = [];
+let maxLowThXQ = [];
+let maxLowThXQPrev = [];
 maxLowThXQPrev = [-999, -999, -999, -999, -999];
-var minLowThXQ = [];
-var minLowThXQPrev = [];
+let minLowThXQ = [];
+let minLowThXQPrev = [];
 minLowThXQPrev = [999, 999, 999, 999, 999];
-var maxLowThYQ = [];
-var maxLowThYQPrev = [];
+let maxLowThYQ = [];
+let maxLowThYQPrev = [];
 maxLowThYQPrev = [-999, -999, -999, -999, -999];
-var minLowThYQ = [];
-var minLowThYQPrev = [];
+let minLowThYQ = [];
+let minLowThYQPrev = [];
 minLowThYQPrev = [-999, -999, -999, -999, -999];
 //Variabler för fokusareors kvadranter, webcamFeed, röd fokusarea(SLUT)
 
 //Variabler för fokusareors kvadranter, webcamFeed, grön fokusarea
-var sumMidThXQ = [];
-var sumMidThXQPrev = [];
+let sumMidThXQ = [];
+let sumMidThXQPrev = [];
 sumMidThXQPrev = [0, 0, 0, 0, 0];
-var sumMidThYQ = [];
-var sumMidThYQPrev = [];
+let sumMidThYQ = [];
+let sumMidThYQPrev = [];
 sumMidThYQPrev = [0, 0, 0, 0, 0];
-var maxMidThXQ = [];
-var maxMidThXQPrev = [];
+let maxMidThXQ = [];
+let maxMidThXQPrev = [];
 maxMidThXQPrev = [-999, -999, -999, -999, -999];
-var minMidThXQ = [];
-var minMidThXQPrev = [];
+let minMidThXQ = [];
+let minMidThXQPrev = [];
 minMidThXQPrev = [999, 999, 999, 999, 999];
-var maxMidThYQ = [];
-var maxMidThYQPrev = [];
+let maxMidThYQ = [];
+let maxMidThYQPrev = [];
 maxMidThYQPrev = [-999, -999, -999, -999, -999];
-var minMidThYQ = [];
-var minMidThYQPrev = [];
+let minMidThYQ = [];
+let minMidThYQPrev = [];
 minMidThYQPrev = [-999, -999, -999, -999, -999];
 //Variabler för fokusareors kvadranter, webcamFeed, grön fokusarea(SLUT)
 
 //Variabler för fokusareors kvadranter, webcamFeed, blå fokusarea
-var sumHiThXQ = [];
-var sumHiThXQPrev = [];
+let sumHiThXQ = [];
+let sumHiThXQPrev = [];
 sumHiThXQPrev = [0, 0, 0, 0, 0];
-var sumHiThYQ = [];
-var sumHiThYQPrev = [];
+let sumHiThYQ = [];
+let sumHiThYQPrev = [];
 sumHiThYQPrev = [0, 0, 0, 0, 0];
-var maxHiThXQ = [];
-var maxHiThXQPrev = [];
+let maxHiThXQ = [];
+let maxHiThXQPrev = [];
 maxHiThXQPrev = [-999, -999, -999, -999, -999];
-var minHiThXQ = [];
-var minHiThXQPrev = [];
+let minHiThXQ = [];
+let minHiThXQPrev = [];
 minHiThXQPrev = [999, 999, 999, 999, 999];
-var maxHiThYQ = [];
-var maxHiThYQPrev = [];
+let maxHiThYQ = [];
+let maxHiThYQPrev = [];
 maxHiThYQPrev = [-999, -999, -999, -999, -999];
-var minHiThYQ = [];
-var minHiThYQPrev = [];
+let minHiThYQ = [];
+let minHiThYQPrev = [];
 minHiThYQPrev = [-999, -999, -999, -999, -999];
 //Variabler för fokusareors kvadranter, webcamFeed, blå fokusarea(SLUT)
 
 //Frame info variabler
-var corners = [];
-var cornersStationary = [];
+let corners = [];
+let cornersStationary = [];
 
 //Skapa arrayer för FAST - punkterna
-var maxIdxVidArr = videoWidth * videoHeight;
+let maxIdxVidArr = videoWidth * videoHeight;
 while (--maxIdxVidArr >= 0) {
     corners[maxIdxVidArr] = new jsfeat.keypoint_t(0, 0, 0, 0);
     cornersStationary[maxIdxVidArr] = 0;
 }
 
 //App variabler 
-var roiWidth, roiHeight, roiX0, roiY0, minCornerScoreForStationary;
-var gui, options;
+let roiWidth, roiHeight, roiX0, roiY0, minCornerScoreForStationary;
+let gui, options;
 
-var demo_opt = function () {
+let demo_opt = function () {
     this.roiWidth = 479;
     this.roiHeight = 271;
     this.roiX0 = 69;
@@ -107,9 +107,9 @@ roiY0 = 94;
 minCornerScoreForStationary = 50;
 
 //Mina variabler för att särskilja stationära vs icke - stationära FAST
-var stationaryCornerHitVal = 4
-var minValForStationary = 1;
-var stationaryNeighbourhood = 3;
+let stationaryCornerHitVal = 4
+let minValForStationary = 1;
+let stationaryNeighbourhood = 3;
 
 //Mainliknande funktion, styr vad som sker övergripande, görs varje frame
 function main(imageObj) {
@@ -200,10 +200,10 @@ function withinROI(idx) {
     let isWithin = false;
     let minX, minY, maxX, maxY;
 
-    minX = roiX0; //slider1.value;
-    maxX = roiX0 + roiWidth; //slider2.value;
-    minY = roiY0; //slider3.value;
-    maxY = roiY0 + roiHeight //slider4.value;
+    minX = options.roiX0;
+    maxX = options.roiX0 + options.roiWidth;
+    minY = options.roiY0;
+    maxY = options.roiY0 + options.roiHeight;
 
     if ((corners[idx].x > minX) && (corners[idx].x < maxX) && (corners[idx].y > minY) && (corners[idx].y < maxY)) {
         isWithin = true;
@@ -293,10 +293,10 @@ function obtainBlueQuadrant(i) {
 
 //FAST corners, liesom likeså, ett måste vill säge
 function drawFastPoints(ctxVideo, ctxCanvas) {
-    var imageData = ctxVideo.getImageData(0, 0, videoWidth, videoHeight);
-    var imageDataCanvas = ctxCanvas.getImageData(0, 0, videoWidth, videoHeight);
-    var img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8_t | jsfeat.C1_t);
-    var threshold = 14;
+    let imageData = ctxVideo.getImageData(0, 0, videoWidth, videoHeight);
+    let imageDataCanvas = ctxCanvas.getImageData(0, 0, videoWidth, videoHeight);
+    let img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8_t | jsfeat.C1_t);
+    let threshold = 14;
 
     //Set FAST corners threshold
     jsfeat.fast_corners.set_threshold(threshold);
@@ -305,11 +305,11 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     jsfeat.imgproc.grayscale(imageData.data, videoWidth, videoHeight, img_u8);
 
     //Här mögas då FAST punkterna té, corners fylls o vi erhåller count
-    var countTot = jsfeat.fast_corners.detect(img_u8, corners, 5);
+    let countTot = jsfeat.fast_corners.detect(img_u8, corners, 5);
     //Variabler för antal FAST punkter i de olika fokusareorna
-    var countHiTh = 0;
-    var countMidTh = 0;
-    var countLowTh = 0;
+    let countHiTh = 0;
+    let countMidTh = 0;
+    let countLowTh = 0;
 
     //Variabler för antal FAST punkter i de olika fokusarerornas kvadranter
     let countLowThQ = [];
@@ -597,7 +597,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     ctxCanvas.beginPath();
     ctxCanvas.lineWidth = "1";
     ctxCanvas.strokeStyle = "white";
-    ctxCanvas.rect(roiX0, roiY0, roiWidth, roiHeight);
+    ctxCanvas.rect(options.roiX0, options.roiY0, options.roiWidth, options.roiHeight);
     ctxCanvas.stroke();
 
     //Update frame geometry variables
