@@ -13,7 +13,7 @@ let maxLowThX = -999, maxLowThXPrev = -999, minLowThX = 999, minLowThXPrev = 999
 let maxMidThX = -999, maxMidThXPrev = -999, minMidThX = 999, minMidThXPrev = 999, maxMidThY = -999, maxMidThYPrev = -999, minMidThY = 999, minMidThYPrev = 999;
 let maxHiThX = -999, maxHiThXPrev = -999, minHiThX = 999, minHiThXPrev = 999, maxHiThY = -999, maxHiThYPrev = -999, minHiThY = 999, minHiThYPrev = 999;
 
-//Variabler för att kvantifiera/sortera/mäga med FAST punkterna
+//Variabler för att kvantifiera/sortera/möga med FAST punkterna
 let maxCornersScore = -999;
 minCornersScore = 999;
 
@@ -84,6 +84,15 @@ minHiThYQPrev = [-999, -999, -999, -999, -999];
 let corners = [];
 let cornersStationary = [];
 
+//Nu jävlar i min lilla låda, liesom rörendes ROI
+let sumROIX = 0;
+let sumROIXPrev = 0;
+let sumROIY = 0;
+let sumROIYPrev = 0;
+let moveROIX = 0;
+let moveROIY = 0;
+//Nu jävlar i min lilla låda, liesom rörendes ROI(SLUT)
+
 //Skapa arrayer för FAST - punkterna
 let maxIdxVidArr = videoWidth * videoHeight;
 while (--maxIdxVidArr >= 0) {
@@ -96,18 +105,18 @@ let roiWidth, roiHeight, roiX0, roiY0, minCornerScoreForStationary;
 let gui, options;
 
 let demo_opt = function () {
-    this.roiWidth = 479;
-    this.roiHeight = 271;
-    this.roiX0 = 69;
-    this.roiY0 = 94;
+    this.roiWidth = 160;
+    this.roiHeight = 120;
+    this.roiX0 = 240;
+    this.roiY0 = 180;
     this.minCornerScoreForStationary = 50;
 }
 
 //Förinställt gör livet enklare att hitta tv'n blann annet.
-roiWidth = 479;
-roiHeight = 271;
-roiX0 = 69;
-roiY0 = 94;
+roiWidth = 160;
+roiHeight = 120;
+roiX0 = 240;
+roiY0 = 180;
 minCornerScoreForStationary = 50;
 
 //Mina variabler för att särskilja stationära vs icke - stationära FAST
@@ -210,10 +219,10 @@ function withinROI(idx) {
     let isWithin = false;
     let minX, minY, maxX, maxY;
 
-    minX = options.roiX0;
-    maxX = options.roiX0 + options.roiWidth;
-    minY = options.roiY0;
-    maxY = options.roiY0 + options.roiHeight;
+    minX = options.roiX0 + moveROIX;
+    maxX = options.roiX0 + moveROIX + options.roiWidth;
+    minY = options.roiY0 + moveROIY;
+    maxY = options.roiY0 + moveROIY + options.roiHeight;
 
     if ((corners[idx].x > minX) && (corners[idx].x < maxX) && (corners[idx].y > minY) && (corners[idx].y < maxY)) {
         isWithin = true;
@@ -620,7 +629,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     ctxCanvas.beginPath();
     ctxCanvas.lineWidth = "1";
     ctxCanvas.strokeStyle = "white";
-    ctxCanvas.rect(options.roiX0, options.roiY0, options.roiWidth, options.roiHeight);
+    ctxCanvas.rect(options.roiX0 + moveROIX, options.roiY0 + moveROIY, options.roiWidth, options.roiHeight);
     ctxCanvas.stroke();
 
     //Update frame geometry variables
@@ -657,6 +666,26 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
         sumHiThYQPrev[i] = sumHiThYQ[i];
     }
     //Update frame quadrant geometry variables(SLUT)
+
+    //Nu jävlar i min lilla låda, liesom rörendes ROI
+    sumROIX = (sumHiThX + sumMidThX + sumLowThX) / 3;
+    sumROIXPrev = (sumHiThXPrev + sumMidThXPrev + sumLowThXPrev) / 3;
+    sumROIY = (sumHiThY + sumMidThY + sumLowThY) / 3;
+    sumROIYPrev = (sumHiThYPrev + sumMidThYPrev + sumLowThYPrev) / 3;
+
+    moveROIX = sumROIX - 320;
+    if ((options.roiX0 + moveROIX < 10) || (options.roiX0 + moveROIX > 560)) {
+        moveROIX = 0;
+    }
+
+    moveROIY = sumROIY - 240;
+    if ((options.roiY0 + moveROIY < 10) || (options.roiY0 + moveROIY > 420)) {
+        moveROIY = 0;
+    }
+
+    sumROIXPrev = sumROIX;
+    sumROIYPrev = sumROIY;
+    //Nu jävlar i min lilla låda, liesom rörendes ROI(SLUT)
 
     //Kolla av vad som skerkod
     let nåtSkit = document.getElementById("count");
