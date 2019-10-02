@@ -111,8 +111,8 @@ let stationaryCornerHitVal = 4
 let minValForStationary = 1;
 let stationaryNeighbourhood = 3;
 
-//Mainliknande funktion, styr vad som sker övergripande, görs varje frame
-function main(imageObj) {
+//Mainliknande funktion, styr vad som görs varje frame
+function canvasVideoFeed(imageObj) {
     let canvas = document.getElementById('videoCanvas');
     let context = canvas.getContext('2d');
     let canvasMellan = document.getElementById('mellanLager');
@@ -157,13 +157,7 @@ function main(imageObj) {
         minCornerScoreForStationary = options.minCornerScoreForStationary | 0;
     }
 }
-//Mainliknande funktion, styr vad som sker övergripande(SLUT)
-
-/*******************************/
-/*******************************/
-/***** Själve fonketionene *****/
-/*******************************/
-/*******************************/
+//Mainliknande funktion, styr vad som görs varje frame(SLUT)
 
 //Canny lines, ett måste
 function drawCannyLines(ctxx) {
@@ -211,6 +205,7 @@ function withinROI(idx) {
 
     return isWithin;
 }
+//Är en corner pixel inom ROI?(SLUT)
 
 //Inom vilken kvadrant i röda ROI'en ligger en FAST punkt?
 function obtainRedQuadrant(i) {
@@ -238,7 +233,9 @@ function obtainRedQuadrant(i) {
 
     return quadrant;
 }
+//Inom vilken kvadrant i röda ROI'en ligger en FAST punkt?(SLUT)
 
+//Inom vilken kvadrant i gröna ROI'en ligger en FAST punkt?
 function obtainGreenQuadrant(i) {
     var quadrant = 4;
 
@@ -264,7 +261,9 @@ function obtainGreenQuadrant(i) {
 
     return quadrant;
 }
+//Inom vilken kvadrant i gröna ROI'en ligger en FAST punkt?(SLUT)
 
+//Inom vilken kvadrant i blåa ROI'en ligger en FAST punkt?
 function obtainBlueQuadrant(i) {
     var quadrant = 4;
 
@@ -290,6 +289,7 @@ function obtainBlueQuadrant(i) {
 
     return quadrant;
 }
+//Inom vilken kvadrant i blåa ROI'en ligger en FAST punkt?(SLUT)
 
 //FAST corners, liesom likeså, ett måste vill säge
 function drawFastPoints(ctxVideo, ctxCanvas) {
@@ -714,7 +714,7 @@ function digitizeColour(imageObj) {
     // overwrite original image
     context.putImageData(imageData, 0, 0);
 }
-//Digitalisere färgerne, d v s modulo lidda grann
+//Digitalisere färgerne, d v s modulo lidda grann(SLUT)
 
 //En demoapp måste man ju ha, liesom, hallå...
 function demo_app() {
