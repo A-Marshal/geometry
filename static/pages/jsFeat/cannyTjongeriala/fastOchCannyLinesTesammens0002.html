@@ -129,7 +129,6 @@
 
 
     <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
-    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/compatibility.js"></script>
     <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
 
     <script type="text/javascript">
@@ -510,7 +509,7 @@
                             minMidThYQ[quadrant] = Math.min(minMidThYQ[quadrant], corners[i].y);
                             countMidThQ[quadrant] += 1;
                         } else if (corners[i].score > 61) {
-                            quadrant = obtainGreenQuadrant(corners, i);
+                            quadrant = obtainBlueQuadrant(corners, i);
                             sumHiThXQ[quadrant] += corners[i].x;
                             sumHiThYQ[quadrant] += corners[i].y;
                             maxHiThXQ[quadrant] = Math.max(maxHiThXQ[quadrant], corners[i].x);
