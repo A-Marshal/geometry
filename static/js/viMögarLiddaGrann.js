@@ -13,6 +13,10 @@ let maxLowThX = -999, maxLowThXPrev = -999, minLowThX = 999, minLowThXPrev = 999
 let maxMidThX = -999, maxMidThXPrev = -999, minMidThX = 999, minMidThXPrev = 999, maxMidThY = -999, maxMidThYPrev = -999, minMidThY = 999, minMidThYPrev = 999;
 let maxHiThX = -999, maxHiThXPrev = -999, minHiThX = 999, minHiThXPrev = 999, maxHiThY = -999, maxHiThYPrev = -999, minHiThY = 999, minHiThYPrev = 999;
 
+//Variabler för att kvantifiera/sortera/mäga med FAST punkterna
+let maxCornersScore = -999;
+minCornersScore = 999;
+
 //Variabler för fokusareors kvadranter, webcamFeed, röd fokusarea
 let sumLowThXQ = [];
 let sumLowThXQPrev = [];
@@ -128,8 +132,20 @@ function canvasVideoFeed(imageObj) {
     contextMellan.putImageData(imageData, 0, 0);
 
     //Sen måste ju vi "vise" att vi liesom mögar lidda grann här
+
+    //testa av timing
+    let innanMitt, efterMitt;
+    innanMitt = Date.now();
     drawCannyLines(context);
     drawFastPoints(contextMellan, context);
+    efterMitt = Date.now();
+    //testa av timing(SLUT)
+
+    let pSkiteria = document.getElementById("count");
+
+    pSkiteria.innerHTML += "<br>Elapsed time for my mög: " + (efterMitt - innanMitt) + " (ms)";
+    pSkiteria.innerHTML += "<br>Max FAST score in ROI: " + maxCornersScore;
+    pSkiteria.innerHTML += "<br>Min FAST score in ROI: " + minCornersScore;
 
     //Uppdatera range slider variablernas värden
     //Update roiWidth from slider
@@ -343,6 +359,11 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     minHiThY = 999;
     //Initiera variabler för fokusareor(SLUT)
 
+    //Initiera max, min corner score
+    maxCornersScore = -999;
+    minCornersScore = 999;
+    //Initiera max, min corner score(SLUT)
+
     //Initiera variabler för fokusareors kvadranter, röd
     sumLowThXQ = [0, 0, 0, 0, 0];
     sumLowThYQ = [0, 0, 0, 0, 0];
@@ -393,6 +414,8 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
             maxTotalY = Math.max(maxTotalY, corners[i].y);
             minTotalX = Math.min(minTotalX, corners[i].x);
             minTotalY = Math.min(minTotalY, corners[i].y);
+            maxCornersScore = Math.max(maxCornersScore, corners[i].score);
+            minCornersScore = Math.min(minCornersScore, corners[i].score);
             if ((corners[i].score > 20) && (corners[i].score < 40)) {
                 sumLowThX += corners[i].x;
                 sumLowThY += corners[i].y;
@@ -639,6 +662,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     let nåtSkit = document.getElementById("count");
 
     nåtSkit.innerHTML = "FAST point count, tot: " + countTot;
+    nåtSkit.innerHTML += "<br>FAST point count, unused: " + (countTot - countHiTh - countMidTh - countLowTh);
     nåtSkit.innerHTML += "<br>FAST point count, hi th: " + countHiTh;
     nåtSkit.innerHTML += "<br>FAST point count, mid th: " + countMidTh;
     nåtSkit.innerHTML += "<br>FAST point count, low th: " + countLowTh;
