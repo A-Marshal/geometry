@@ -83,6 +83,7 @@ minHiThYQPrev = [-999, -999, -999, -999, -999];
 //Frame info variabler
 let corners = [];
 let cornersStationary = [];
+let allThZero = false;
 
 //Nu jävlar i min lilla låda, liesom rörendes ROI
 let sumROIX = 0;
@@ -146,7 +147,7 @@ function canvasVideoFeed(imageObj) {
     //testa av timing
     let innanMitt, efterMitt;
     innanMitt = Date.now();
-    drawCannyLines(context);
+    drawCannyLines(context, allThZero);
     drawFastPoints(contextMellan, context);
     efterMitt = Date.now();
     //testa av timing(SLUT)
@@ -186,7 +187,7 @@ function canvasVideoFeed(imageObj) {
 //Mainliknande funktion, styr vad som görs varje frame(SLUT)
 
 //Canny lines, ett måste
-function drawCannyLines(ctxx) {
+function drawCannyLines(ctxx, allThZero) {
     let img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8C1_t | jsfeat.C1_t);
 
     let imageData = ctxx.getImageData(0, 0, videoWidth, videoHeight);
@@ -207,7 +208,11 @@ function drawCannyLines(ctxx) {
     while (--i >= 0) {
         pix = img_u8.data[i];
         if (pix > 0) {
-            data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+            if (!allThZero){
+            data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix; //white
+            } else {
+                data_u32[i] = alpha | (pix << 16) | (0x00 << 8) | pix; //purple
+            }
         }
     }
 
@@ -453,6 +458,14 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
                 countHiTh++;
             }
         }
+    }
+
+    //Uppdatera allThZero för att kolla av om vi ska glo in dåliga
+    //FAST punkter etc eller ej
+    if (countHiTh == 0 && countMidTh == 0 && countLowTh == 0) {
+        allThZero = true;
+    } else {
+        allThZero = false;
     }
 
     //Räkna ut geo. medelvärden för fokusareornas kvadranter
@@ -739,10 +752,18 @@ function render_corners2(corners, cornersStationary, count, countHiTh, countMidT
         var off = (x + y * step);
         if ((countHiTh == 0) && (countMidTh == 0) && (countLowTh == 0)) {
             img[off] = purplePix;
+            img[off - 3] = purplePix;
+            img[off - 2] = purplePix;
             img[off - 1] = purplePix;
             img[off + 1] = purplePix;
+            img[off + 2] = purplePix;
+            img[off + 3] = purplePix;
+            img[off - 3 * step] = purplePix;
+            img[off - 2 * step] = purplePix;
             img[off - step] = purplePix;
             img[off + step] = purplePix;
+            img[off + 2 * step] = purplePix;
+            img[off + 3 * step] = purplePix;
         } else if ((cornersStationary[off] > minValForStationary) && corners[i].score > minCornerScoreForStationary) {
             img[off] = redPix;
             img[off - 1] = redPix;
