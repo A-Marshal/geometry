@@ -91,6 +91,7 @@ let sumROIY = 0;
 let sumROIYPrev = 0;
 let moveROIX = 0;
 let moveROIY = 0;
+let countZeroFrames = 0;
 //Nu jävlar i min lilla låda, liesom rörendes ROI(SLUT)
 
 //Skapa arrayer för FAST - punkterna
@@ -105,18 +106,18 @@ let roiWidth, roiHeight, roiX0, roiY0, minCornerScoreForStationary;
 let gui, options;
 
 let demo_opt = function () {
-    this.roiWidth = 160;
-    this.roiHeight = 120;
-    this.roiX0 = 240;
-    this.roiY0 = 180;
+    this.roiWidth = 458;
+    this.roiHeight = 161;
+    this.roiX0 = 90;
+    this.roiY0 = 146;
     this.minCornerScoreForStationary = 50;
 }
 
 //Förinställt gör livet enklare att hitta tv'n blann annet.
-roiWidth = 160;
-roiHeight = 120;
-roiX0 = 240;
-roiY0 = 180;
+roiWidth = 458;
+roiHeight = 161;
+roiX0 = 90;
+roiY0 = 146;
 minCornerScoreForStationary = 50;
 
 //Mina variabler för att särskilja stationära vs icke - stationära FAST
@@ -498,7 +499,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
 
     //render_corners(corners, countTot, data_u32, videoWidth);
 
-    render_corners2(corners, cornersStationary, countTot, data_u32, videoWidth);
+    render_corners2(corners, cornersStationary, countTot, countHiTh, countMidTh, countLowTh, data_u32, videoWidth);
 
     ctxCanvas.putImageData(imageDataCanvas, 0, 0);
 
@@ -667,25 +668,40 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     }
     //Update frame quadrant geometry variables(SLUT)
 
+    /*
     //Nu jävlar i min lilla låda, liesom rörendes ROI
     sumROIX = (sumHiThX + sumMidThX + sumLowThX) / 3;
     sumROIXPrev = (sumHiThXPrev + sumMidThXPrev + sumLowThXPrev) / 3;
     sumROIY = (sumHiThY + sumMidThY + sumLowThY) / 3;
     sumROIYPrev = (sumHiThYPrev + sumMidThYPrev + sumLowThYPrev) / 3;
 
-    moveROIX = sumROIX - 320;
-    if ((options.roiX0 + moveROIX < 10) || (options.roiX0 + moveROIX > 560)) {
-        moveROIX = 0;
+    if ((countHiTh != 0) && (countMidTh != 0) && (countLowTh != 0)) {
+        moveROIX = sumROIX - 320;
+        if ((options.roiX0 + moveROIX < 10) || (options.roiX0 + moveROIX > 560)) {
+            moveROIX = 0;
+        }
+
+        moveROIY = sumROIY - 240;
+        if ((options.roiY0 + moveROIY < 10) || (options.roiY0 + moveROIY > 420)) {
+            moveROIY = 0;
+        }
+
+        sumROIXPrev = sumROIX;
+        sumROIYPrev = sumROIY;
     }
 
-    moveROIY = sumROIY - 240;
-    if ((options.roiY0 + moveROIY < 10) || (options.roiY0 + moveROIY > 420)) {
+    if ((countHiTh = 0) && (countMidTh = 0) && (countLowTh = 0)) {
+        countZeroFrames++;
+    }
+
+    //Om vi fastnar i ett område utan FAST stannar vi ju kvar om vi
+    //inte räknar o nollställer efter x frames utan någeting
+    if (countZeroFrames > 2) {
+        moveROIX = 0;
         moveROIY = 0;
     }
-
-    sumROIXPrev = sumROIX;
-    sumROIYPrev = sumROIY;
     //Nu jävlar i min lilla låda, liesom rörendes ROI(SLUT)
+    */
 
     //Kolla av vad som skerkod
     let nåtSkit = document.getElementById("count");
@@ -711,16 +727,23 @@ function render_corners(corners, count, img, step) {
     }
 }
 
-function render_corners2(corners, cornersStationary, count, img, step) {
+function render_corners2(corners, cornersStationary, count, countHiTh, countMidTh, countLowTh, img, step) {
     var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00; //green, ABGR
     var redPix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
-    var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //red, ABGR
+    var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //pink, ABGR
+    var purplePix = (0xff << 24) | (0xff << 16) | (0x00 << 8) | 0xff; //purple, ABGR
 
     for (var i = 0; i < count; ++i) {
         var x = corners[i].x;
         var y = corners[i].y;
         var off = (x + y * step);
-        if ((cornersStationary[off] > minValForStationary) && corners[i].score > minCornerScoreForStationary) {
+        if ((countHiTh == 0) && (countMidTh == 0) && (countLowTh == 0)) {
+            img[off] = purplePix;
+            img[off - 1] = purplePix;
+            img[off + 1] = purplePix;
+            img[off - step] = purplePix;
+            img[off + step] = purplePix;
+        } else if ((cornersStationary[off] > minValForStationary) && corners[i].score > minCornerScoreForStationary) {
             img[off] = redPix;
             img[off - 1] = redPix;
             img[off + 1] = redPix;
