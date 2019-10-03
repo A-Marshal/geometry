@@ -13,6 +13,10 @@ let maxLowThX = -999, maxLowThXPrev = -999, minLowThX = 999, minLowThXPrev = 999
 let maxMidThX = -999, maxMidThXPrev = -999, minMidThX = 999, minMidThXPrev = 999, maxMidThY = -999, maxMidThYPrev = -999, minMidThY = 999, minMidThYPrev = 999;
 let maxHiThX = -999, maxHiThXPrev = -999, minHiThX = 999, minHiThXPrev = 999, maxHiThY = -999, maxHiThYPrev = -999, minHiThY = 999, minHiThYPrev = 999;
 
+//Variabler för canny linjer, ROI
+let sumCannyX = 0, sumCannyY = 0, maxCannyX = -999, maxCannyY = -999, minCannyX = 999, minCannyY = 999;
+let countCannyROI = 0;
+
 //Variabler för att kvantifiera/sortera/möga med FAST punkterna
 let maxCornersScore = -999;
 minCornersScore = 999;
@@ -108,17 +112,17 @@ let gui, options;
 
 let demo_opt = function () {
     this.roiWidth = 458;
-    this.roiHeight = 161;
-    this.roiX0 = 90;
-    this.roiY0 = 146;
+    this.roiHeight = 187;
+    this.roiX0 = 118;
+    this.roiY0 = 198;
     this.minCornerScoreForStationary = 50;
 }
 
 //Förinställt gör livet enklare att hitta tv'n blann annet.
 roiWidth = 458;
-roiHeight = 161;
-roiX0 = 90;
-roiY0 = 146;
+roiHeight = 187;
+roiX0 = 118;
+roiY0 = 198;
 minCornerScoreForStationary = 50;
 
 //Mina variabler för att särskilja stationära vs icke - stationära FAST
@@ -147,7 +151,8 @@ function canvasVideoFeed(imageObj) {
     //testa av timing
     let innanMitt, efterMitt;
     innanMitt = Date.now();
-    drawCannyLines(context, allThZero);
+    //drawCannyLines(context, allThZero);
+    bloodyStupidJohnsonCannyLines(context, allThZero);
     drawFastPoints(contextMellan, context);
     efterMitt = Date.now();
     //testa av timing(SLUT)
@@ -208,8 +213,8 @@ function drawCannyLines(ctxx, allThZero) {
     while (--i >= 0) {
         pix = img_u8.data[i];
         if (pix > 0) {
-            if (!allThZero){
-            data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix; //white
+            if (!allThZero) {
+                data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix; //white
             } else {
                 data_u32[i] = alpha | (pix << 16) | (0x00 << 8) | pix; //purple
             }
@@ -218,6 +223,85 @@ function drawCannyLines(ctxx, allThZero) {
 
     ctxx.putImageData(imageData, 0, 0);
 }
+
+function bloodyStupidJohnsonCannyLines(ctxx, allThZero) {
+    let img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8C1_t | jsfeat.C1_t);
+
+    let imageData = ctxx.getImageData(0, 0, videoWidth, videoHeight);
+
+    jsfeat.imgproc.grayscale(imageData.data, videoWidth, videoHeight, img_u8);
+
+    let r = 2; //options.blur_radius | 0;
+    let kernel_size = (r + 1) << 1;
+
+    //Initiering av globaler
+    sumCannyX = 0;
+    sumCannyY = 0;
+    maxCannyX = -999;
+    maxCannyY = -999;
+    minCannyX = 999;
+    minCannyY = 999;
+    countCannyROI = 0;
+
+    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+
+    jsfeat.imgproc.canny(img_u8, img_u8, 20, 50 /* options.low_threshold | 0, options.high_threshold | 0 */);
+
+    // render result back to canvas
+    let data_u32 = new Uint32Array(imageData.data.buffer);
+    let alpha = (0xff << 24);
+    let i = img_u8.cols * img_u8.rows, pix = 0, row = 0;
+    //while (--i >= 0) {
+    for (var ii = 0; ii < i; ii++) {
+        pix = img_u8.data[ii];
+
+        if ((ii != 0) && (ii % 640 == 0)) {
+            row++;
+        }
+
+        if (pix > 0) {
+            //Canny ROI info
+            let xx = ii - row * 640;
+            let yy = row;
+            if (cannyWithinROI(xx, yy)) {
+                sumCannyX += xx;
+                sumCannyY += yy;
+                maxCannyX = Math.max(maxCannyX, xx);
+                maxCannyY = Math.max(maxCannyY, yy);
+                minCannyX = Math.min(minCannyX, xx);
+                minCannyY = Math.min(minCannyY, yy);
+                countCannyROI++;
+            }
+            //Canny ROI info(SLUT)
+            if (!allThZero) {
+                data_u32[ii] = alpha | (pix << 16) | (pix << 8) | pix; //white
+            } else {
+                data_u32[ii] = alpha | (pix << 16) | (0x00 << 8) | pix; //purple
+            }
+        }
+    }
+
+    ctxx.putImageData(imageData, 0, 0);
+}
+
+//Är en corner pixel inom ROI?
+function cannyWithinROI(x, y) {
+    let isWithin = false;
+    let minX, minY, maxX, maxY;
+
+    minX = options.roiX0;
+    maxX = options.roiX0 + options.roiWidth;
+    minY = options.roiY0;
+    maxY = options.roiY0 + options.roiHeight;
+
+    if ((x > minX) && (x < maxX) && (y > minY) && (y < maxY)) {
+        isWithin = true;
+    }
+
+    return isWithin;
+}
+//Är en corner pixel inom ROI?(SLUT)
+
 //Canny lines, ett måste(SLUT)
 
 //Är en corner pixel inom ROI?
@@ -646,6 +730,36 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     ctxCanvas.rect(options.roiX0 + moveROIX, options.roiY0 + moveROIY, options.roiWidth, options.roiHeight);
     ctxCanvas.stroke();
 
+    //I det fall vi har dålig bildkvalité, d v s inga FAST punkter pga
+    //ur fokus, mörkt, väldigt ljust, grått, utsmeta, vadsomhelst
+    //då visar vi lila rektangel kring canny linjerna, om sådana finnes
+    if (countCannyROI > 2) {
+        sumCannyX /= countCannyROI;
+        sumCannyY /= countCannyROI;
+        // Purple rectangle
+        ctxCanvas.beginPath();
+        ctxCanvas.strokeStyle = "fuchsia";
+        ctxCanvas.rect(minCannyX, minCannyY, (maxCannyX - minCannyX), (maxCannyY - minCannyY));
+        ctxCanvas.stroke();
+        //Lila rektangelns centerlijer
+        ctxCanvas.beginPath();
+        ctxCanvas.moveTo((minCannyX + (maxCannyX - minCannyX) / 2), minCannyY);
+        ctxCanvas.lineTo((minCannyX + (maxCannyX - minCannyX) / 2), maxCannyY);
+        ctxCanvas.stroke();
+        ctxCanvas.beginPath();
+        ctxCanvas.moveTo(minCannyX, (minCannyY + (maxCannyY - minCannyY) / 2));
+        ctxCanvas.lineTo(maxCannyX, (minCannyY + (maxCannyY - minCannyY) / 2));
+        ctxCanvas.stroke();
+        //Blåa rektangelns centerlijer(SLUT)
+        ctxCanvas.beginPath();
+        ctxCanvas.arc(sumCannyX, sumCannyY, 8, 0, 2 * Math.PI);
+        ctxCanvas.stroke();
+        ctxCanvas.beginPath();
+    }
+    //I det fall vi har dålig bildkvalité, d v s inga FAST punkter pga(SLUT)
+    //ur fokus, mörkt, väldigt ljust, grått, utsmeta, vadsomhelst(SLUT)
+    //då visar vi lila rektangel kring canny linjerna, om sådana finnes(SLUT)
+
     //Update frame geometry variables
     sumLowThXPrev = sumLowThX;
     sumLowThYPrev = sumLowThY;
@@ -719,7 +833,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     //Kolla av vad som skerkod
     let nåtSkit = document.getElementById("count");
 
-    nåtSkit.innerHTML = "FAST point count, tot: " + countTot;
+    nåtSkit.innerHTML = "FAST point count, tot: " + countCannyROI;
     nåtSkit.innerHTML += "<br>FAST point count, unused: " + (countTot - countHiTh - countMidTh - countLowTh);
     nåtSkit.innerHTML += "<br>FAST point count, hi th: " + countHiTh;
     nåtSkit.innerHTML += "<br>FAST point count, mid th: " + countMidTh;
