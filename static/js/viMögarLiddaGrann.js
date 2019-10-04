@@ -335,20 +335,45 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
             //Canny ROI info(SLUT)
 
             //En första liden liden Bloody Stupid Johnson lina
+            //Horisontaler
             if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1] > 0)) {
-                //Horisontaler
-                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow                    
-            } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Vertikaler
+            } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0x00 << 16) | (0x8C << 8) | 0xff; //dark orange
+                //Snett upp åt höger1
             } else if ((img_u8.data[ii + 1 - videoWidth] > 0) && (img_u8.data[ii - 1 + videoWidth] > 0)) {
-                //Snett upp åt höger
                 data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
+                //Snett upp åt höger2
+            } else if ((img_u8.data[ii + 1 - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
+                //Snett upp åt höger3
+            } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii - 1 + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
+                //Snett upp åt vänster1
             } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
-                //Snett upp åt vänster
-                data_u32[ii] = alpha | (0x98 << 16) | (0xfb << 8) | 0x98; //pale green
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
+                //Snett upp åt vänster2
+            } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
+                //Snett upp åt vänster3
+            } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
+                //Allt annat, kan tas om hand om också... typ palla...
             } else {
                 data_u32[ii] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                //Testa lite grann
+                /*
+                data_u32[ii - 1 - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                data_u32[ii - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                data_u32[ii + 1 - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                data_u32[ii - 1] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                data_u32[ii + 1] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                data_u32[ii - 1  + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                data_u32[ii + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                data_u32[ii + 1 + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                */
+                //Testa lite grann(SLUT)
             }
             //En första liden liden Bloody Stupid Johnson lina(SLUT)
         }
@@ -742,7 +767,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
 
         // Green rectangle
         ctxCanvas.beginPath();
-        ctxCanvas.strokeStyle = "green";
+        ctxCanvas.strokeStyle = "limegreen";
         ctxCanvas.rect(minMidThX, minMidThY, (maxMidThX - minMidThX), (maxMidThY - minMidThY));
         ctxCanvas.stroke();
         //Gröna rektangelns centerlijer
@@ -906,7 +931,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     //Kolla av vad som skerkod
     let nåtSkit = document.getElementById("count");
 
-    nåtSkit.innerHTML = "FAST point count, tot: " + countCannyROI;
+    nåtSkit.innerHTML = "FAST point count, tot: " + countTot;
     nåtSkit.innerHTML += "<br>FAST point count, unused: " + (countTot - countHiTh - countMidTh - countLowTh);
     nåtSkit.innerHTML += "<br>FAST point count, hi th: " + countHiTh;
     nåtSkit.innerHTML += "<br>FAST point count, mid th: " + countMidTh;
@@ -928,7 +953,7 @@ function render_corners(corners, count, img, step) {
 }
 
 function render_corners2(corners, cornersStationary, count, countHiTh, countMidTh, countLowTh, img, step) {
-    var pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00; //green, ABGR
+    var pix = (0xff << 24) | (0x32 << 16) | (0xCD << 8) | 0x32; //limegreen, ABGR
     var redPix = (0xff << 24) | (0x00 << 16) | (0x00 << 8) | 0xff; //red, ABGR
     var pinkPix = (0xff << 24) | (0x99 << 16) | (0x99 << 8) | 0xff; //pink, ABGR
     var purplePix = (0xff << 24) | (0xff << 16) | (0x00 << 8) | 0xff; //purple, ABGR
