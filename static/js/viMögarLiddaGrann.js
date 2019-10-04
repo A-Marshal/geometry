@@ -152,7 +152,7 @@ function canvasVideoFeed(imageObj) {
     let innanMitt, efterMitt;
     innanMitt = Date.now();
     //drawCannyLines(context, allThZero);
-    bloodyStupidJohnsonCannyLines(context, allThZero);
+    bloodyStupidJohnsonCannyLines0002(context, allThZero);
     drawFastPoints(contextMellan, context);
     efterMitt = Date.now();
     //testa av timing(SLUT)
@@ -278,6 +278,79 @@ function bloodyStupidJohnsonCannyLines(ctxx, allThZero) {
             } else {
                 data_u32[ii] = alpha | (pix << 16) | (0x00 << 8) | pix; //purple
             }
+        }
+    }
+
+    ctxx.putImageData(imageData, 0, 0);
+}
+
+function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
+    let img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8C1_t | jsfeat.C1_t);
+
+    let imageData = ctxx.getImageData(0, 0, videoWidth, videoHeight);
+
+    jsfeat.imgproc.grayscale(imageData.data, videoWidth, videoHeight, img_u8);
+
+    let r = 2; //options.blur_radius | 0;
+    let kernel_size = (r + 1) << 1;
+
+    //Initiering av globaler
+    sumCannyX = 0;
+    sumCannyY = 0;
+    maxCannyX = -999;
+    maxCannyY = -999;
+    minCannyX = 999;
+    minCannyY = 999;
+    countCannyROI = 0;
+
+    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+
+    jsfeat.imgproc.canny(img_u8, img_u8, 20, 50 /* options.low_threshold | 0, options.high_threshold | 0 */);
+
+    // render result back to canvas
+    let data_u32 = new Uint32Array(imageData.data.buffer);
+    let alpha = (0xff << 24);
+    let noImagePix = img_u8.cols * img_u8.rows, pix = 0, row = 0;
+    //while (--i >= 0) {
+    for (var ii = 0; ii < noImagePix; ii++) {
+        pix = img_u8.data[ii];
+
+        if ((ii != 0) && (ii % 640 == 0)) {
+            row++;
+        }
+
+        if (pix > 0) {
+            //Canny ROI info
+            let xx = ii - row * 640;
+            let yy = row;
+            if (cannyWithinROI(xx, yy)) {
+                sumCannyX += xx;
+                sumCannyY += yy;
+                maxCannyX = Math.max(maxCannyX, xx);
+                maxCannyY = Math.max(maxCannyY, yy);
+                minCannyX = Math.min(minCannyX, xx);
+                minCannyY = Math.min(minCannyY, yy);
+                countCannyROI++;
+            }
+            //Canny ROI info(SLUT)
+
+            //En första liden liden Bloody Stupid Johnson lina
+            if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1] > 0)) {
+                //Horisontaler
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow                    
+            } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
+                //Vertikaler
+                data_u32[ii] = alpha | (0x00 << 16) | (0x8C << 8) | 0xff; //dark orange
+            } else if ((img_u8.data[ii + 1 - videoWidth] > 0) && (img_u8.data[ii - 1 + videoWidth] > 0)) {
+                //Snett upp åt höger
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
+            } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
+                //Snett upp åt vänster
+                data_u32[ii] = alpha | (0x98 << 16) | (0xfb << 8) | 0x98; //pale green
+            } else {
+                data_u32[ii] = alpha | (pix << 16) | (pix << 8) | pix; //white
+            }
+            //En första liden liden Bloody Stupid Johnson lina(SLUT)
         }
     }
 
