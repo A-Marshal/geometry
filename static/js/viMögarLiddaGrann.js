@@ -311,14 +311,15 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
     let data_u32 = new Uint32Array(imageData.data.buffer);
     let alpha = (0xff << 24);
     let noImagePix = img_u8.cols * img_u8.rows, row = 0;
-    let pix = 0, pixR = 0, pixB = 0, pixG = 0, pctPartOf = 0.2;
+    let pix = 0, pixR = 0, pixB = 0, pixG = 0, pctPartOf = 0.1;
     //while (--i >= 0) {
     for (var ii = 0; ii < noImagePix; ii++) {
         pix = img_u8.data[ii];
-        //Get the RGB value for colour plane colour intersects
-        pixR = 8 >> pix;
-        pixG = 16 >> pix;
-        pixB = 24 >> pix;
+
+        //Get the RGB value for colour plane inflection points
+        pixR = imageData.data[ii];
+        pixG = imageData.data[ii + 1];
+        pixB = imageData.data[ii + 2];
 
 
         if ((ii != 0) && (ii % 640 == 0)) {
@@ -386,37 +387,37 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
                 data_u32[ii] = alpha | (pix << 16) | (pix << 8) | pix; //white
 
                 //Testa lite grann
-                let upperLeftR = 8 >> data_u32[ii - 1 - videoWidth];
-                let upperLeftG = 16 >> data_u32[ii - 1 - videoWidth];
-                let upperLeftB = 24 >> data_u32[ii - 1 - videoWidth];
+                let upperLeftR = imageData.data[ii - 4 - 4 * videoWidth];
+                let upperLeftG = imageData.data[ii - 4 - 4 * videoWidth + 1];
+                let upperLeftB = imageData.data[ii - 4 - 4 * videoWidth + 2];
 
-                let upperCenterR = 8 >> data_u32[ii - videoWidth];
-                let upperCenterG = 16 >> data_u32[ii - videoWidth];
-                let upperCenterB = 24 >> data_u32[ii - videoWidth];
+                let upperCenterR = imageData.data[ii - 4 * videoWidth];
+                let upperCenterG = imageData.data[ii - 4 * videoWidth + 1];
+                let upperCenterB = imageData.data[ii - 4 * videoWidth + 2];
 
-                let upperRightR = 8 >> data_u32[ii + 1 - videoWidth];
-                let upperRightG = 16 >> data_u32[ii + 1 - videoWidth];
-                let upperRightB = 24 >> data_u32[ii + 1 - videoWidth];
+                let upperRightR = imageData.data[ii + 4 - 4 * videoWidth];
+                let upperRightG = imageData.data[ii + 4 - 4 * videoWidth + 1];
+                let upperRightB = imageData.data[ii + 4 - 4 * videoWidth + 2];
 
-                let centerLeftR = 8 >> data_u32[ii - 1];
-                let centerLeftG = 16 >> data_u32[ii - 1];
-                let centerLeftB = 24 >> data_u32[ii - 1];
+                let centerLeftR = imageData.data[ii - 4];
+                let centerLeftG = imageData.data[ii - 4 + 1];
+                let centerLeftB = imageData.data[ii - 4 + 2];
 
-                let centerRightR = 8 >> data_u32[ii + 1];
-                let centerRightG = 16 >> data_u32[ii + 1];
-                let centerRightB = 24 >> data_u32[ii + 1];
+                let centerRightR = imageData.data[ii + 4];
+                let centerRightG = imageData.data[ii + 4 + 1];
+                let centerRightB = imageData.data[ii + 4 + 2];
 
-                let lowerLeftR = 8 >> data_u32[ii - 1 + videoWidth];
-                let lowerLeftG = 16 >> data_u32[ii - 1 + videoWidth];
-                let lowerLeftB = 24 >> data_u32[ii - 1 + videoWidth];
+                let lowerLeftR = imageData.data[ii - 4 + 4 * videoWidth];
+                let lowerLeftG = imageData.data[ii - 4 + 4 * videoWidth + 1];
+                let lowerLeftB = imageData.data[ii - 4 + 4 * videoWidth + 2];
 
-                let lowerCenterR = 8 >> data_u32[ii + videoWidth];
-                let lowerCenterG = 16 >> data_u32[ii + videoWidth];
-                let lowerCenterB = 24 >> data_u32[ii + videoWidth];
+                let lowerCenterR = imageData.data[ii + 4 * videoWidth];
+                let lowerCenterG = imageData.data[ii + 4 * videoWidth + 1];
+                let lowerCenterB = imageData.data[ii + 4 * videoWidth + 2];
 
-                let lowerRightR = 8 >> data_u32[ii + 1 + videoWidth];
-                let lowerRightG = 16 >> data_u32[ii + 1 + videoWidth];
-                let lowerRightB = 24 >> data_u32[ii + 1 + videoWidth];
+                let lowerRightR = imageData.data[ii + 4 + videoWidth];
+                let lowerRightG = imageData.data[ii + 4 + videoWidth + 1];
+                let lowerRightB = imageData.data[ii + 4 + videoWidth + 2];
 
                 //Upper left
                 if ((Math.abs(1 - (upperLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (upperLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (upperLeftB / pixB)) > pctPartOf)) {
