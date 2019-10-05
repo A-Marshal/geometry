@@ -346,16 +346,20 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
                 data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Horisontaler2 - dessa kan vara intressanta att färga annerledes
             } else if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
-                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green - TYDLIGEN...
+                //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Horisontaler3 - dessa kan vara intressanta att färga annerledes
             } else if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1 - videoWidth] > 0)) {
-                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan - TYDLIGEN...
+                //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Horisontaler4 - dessa kan vara intressanta att färga annerledes
             } else if ((img_u8.data[ii - 1 + videoWidth] > 0) && (img_u8.data[ii + 1] > 0)) {
-                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan - TYDLIGEN...
+                //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Horisontaler5 - dessa kan vara intressanta att färga annerledes
             } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + 1] > 0)) {
-                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green - TYDLIGEN...
+                //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Vertikaler
             } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0x00 << 16) | (0x8C << 8) | 0xff; //dark orange
