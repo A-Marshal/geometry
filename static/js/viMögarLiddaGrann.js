@@ -335,8 +335,20 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
             //Canny ROI info(SLUT)
 
             //En första liden liden Bloody Stupid Johnson lina
-            //Horisontaler
+            //Horisontaler1
             if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Horisontaler2 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Horisontaler3 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1 - videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Horisontaler4 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1 + videoWidth] > 0) && (img_u8.data[ii + 1] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Horisontaler5 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + 1] > 0)) {
                 data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Vertikaler
             } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
@@ -344,22 +356,22 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
                 //Snett upp åt höger1
             } else if ((img_u8.data[ii + 1 - videoWidth] > 0) && (img_u8.data[ii - 1 + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
-                //Snett upp åt höger2
+                //Snett upp åt höger2 - dessa kan vara intressanta att färga annerledes
             } else if ((img_u8.data[ii + 1 - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
-                //Snett upp åt höger3
+                //Snett upp åt höger3 - dessa kan vara intressanta att färga annerledes
             } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii - 1 + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
                 //Snett upp åt vänster1
             } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
-                //Snett upp åt vänster2
+                //Snett upp åt vänster2 - dessa kan vara intressanta att färga annerledes
             } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
-                //Snett upp åt vänster3
+                //Snett upp åt vänster3 - dessa kan vara intressanta att färga annerledes
             } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
-                //Allt annat, kan tas om hand om också... typ palla...
+                //Allt annat, kan tas om hand om också... typ palla..., FAST hé é intressante punkte
             } else {
                 data_u32[ii] = alpha | (pix << 16) | (pix << 8) | pix; //white
                 //Testa lite grann

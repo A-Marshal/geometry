@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Camera eyes</title>
+</head>
+
+<body>
+    <video autoplay="true" id="videoElement" width="640" height="480"></video>
+    <canvas id="videoCanvas" width="640" height="480"></canvas>
+    <canvas id="mellanLager" width="640" height="480" style="display: none"></canvas>
+    <p id="count"></p>
+
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
+    <script type="text/javascript" src="../../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
+    <script type="text/javascript" src="../../../js/viMögarLiddaGrann.js"></script>
+    <script>
+        let video = document.querySelector("#videoElement");
+        let canvas = document.getElementById('videoCanvas');
+        let ctx = canvas.getContext('2d');
+
+        //Setup the video stream
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    video.srcObject = stream;
+                    //Display nifty range sliders in upper right corner
+                    demo_app();
+                    //The camera app
+                    let myMain = setInterval(intervalTimer, 200);
+                })
+                .catch(function (error) {
+                    console.log("Something went wrong!");
+                });
+        }
+
+        function intervalTimer() {
+            ctx.clearRect(0, 0, 640, 480);
+            canvasVideoFeed(video);
+        }
+    </script>
+</body>
+
+</html>
