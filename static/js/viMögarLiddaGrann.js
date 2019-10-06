@@ -359,7 +359,7 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
                 //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Vertikaler
             } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
-                data_u32[ii] = alpha | (0x00 << 16) | (0x8C << 8) | 0xff; //dark orange
+                data_u32[ii] = alpha | (0x00 << 16) | (0x00 << 8) | 0xff; //red
                 //Snett upp åt höger1
             } else if ((img_u8.data[ii + 1 - videoWidth] > 0) && (img_u8.data[ii - 1 + videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
@@ -1159,22 +1159,25 @@ function extractMajorColour(context) {
     for (let i = 0; i < imageData.data.length; i += 4) {
         let range = 40;
         let pctDiff = 0.2;
+        let minForWhite = 220;
 
         // red
-        if ((Math.abs(1 - (imageData.data[i] / imageData.data[i + 1])) > pctDiff) && (Math.abs(1 - (imageData.data[i] / imageData.data[i + 2])) > pctDiff)) {
-            imageData.data[i] = Math.floor(imageData.data[i] / (range)) * range;
-            imageData.data[i + 1] = 0;
-            imageData.data[i + 2] = 0;
-        } else if ((Math.abs(1 - (imageData.data[i + 1] / imageData.data[i])) > pctDiff) && (Math.abs(1 - (imageData.data[i + 1] / imageData.data[i + 2])) > pctDiff)) {
-            // green
-            imageData.data[i + 1] = Math.floor(imageData.data[i + 1] / (range)) * range;
-            imageData.data[i] = 0;
-            imageData.data[i + 2] = 0;
-        } else if ((Math.abs(1 - (imageData.data[i + 2] / imageData.data[i]) > pctDiff)) && (Math.abs(1 - (imageData.data[i + 2] / imageData.data[i + 1])) > pctDiff)) {
-            // blue
-            imageData.data[i + 2] = Math.floor(imageData.data[i + 2] / (range)) * range;
-            imageData.data[i] = 0;
-            imageData.data[i + 1] = 0;
+        if ((imageData.data[i] < minForWhite) && (imageData.data[i + 1] < minForWhite) && (imageData.data[i + 2] < minForWhite)) {
+            if ((Math.abs(1 - (imageData.data[i] / imageData.data[i + 1])) > pctDiff) && (Math.abs(1 - (imageData.data[i] / imageData.data[i + 2])) > pctDiff)) {
+                imageData.data[i] = Math.floor(imageData.data[i] / (range)) * range;
+                imageData.data[i + 1] = 0;
+                imageData.data[i + 2] = 0;
+            } else if ((Math.abs(1 - (imageData.data[i + 1] / imageData.data[i])) > pctDiff) && (Math.abs(1 - (imageData.data[i + 1] / imageData.data[i + 2])) > pctDiff)) {
+                // green
+                imageData.data[i + 1] = Math.floor(imageData.data[i + 1] / (range)) * range;
+                imageData.data[i] = 0;
+                imageData.data[i + 2] = 0;
+            } else if ((Math.abs(1 - (imageData.data[i + 2] / imageData.data[i]) > pctDiff)) && (Math.abs(1 - (imageData.data[i + 2] / imageData.data[i + 1])) > pctDiff)) {
+                // blue
+                imageData.data[i + 2] = Math.floor(imageData.data[i + 2] / (range)) * range;
+                imageData.data[i] = 0;
+                imageData.data[i + 1] = 0;
+            }
         }
     }
 
