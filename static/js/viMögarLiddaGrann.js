@@ -112,17 +112,17 @@ let gui, options;
 
 let demo_opt = function () {
     this.roiWidth = 458;
-    this.roiHeight = 187;
-    this.roiX0 = 118;
-    this.roiY0 = 198;
+    this.roiHeight = 224;
+    this.roiX0 = 49;
+    this.roiY0 = 58;
     this.minCornerScoreForStationary = 50;
 }
 
 //Förinställt gör livet enklare att hitta tv'n blann annet.
 roiWidth = 458;
-roiHeight = 187;
-roiX0 = 118;
-roiY0 = 198;
+roiHeight = 224;
+roiX0 = 49;
+roiY0 = 58;
 minCornerScoreForStationary = 50;
 
 //Mina variabler för att särskilja stationära vs icke - stationära FAST
@@ -154,6 +154,7 @@ function canvasVideoFeed(imageObj) {
     //drawCannyLines(context, allThZero);
     bloodyStupidJohnsonCannyLines0002(context, allThZero);
     drawFastPoints(contextMellan, context);
+    extractMajorColour(context);
     efterMitt = Date.now();
     //testa av timing(SLUT)
 
@@ -286,6 +287,7 @@ function bloodyStupidJohnsonCannyLines(ctxx, allThZero) {
 
 function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
     let img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8C1_t | jsfeat.C1_t);
+    let img_u8Inflection = [];
 
     let imageData = ctxx.getImageData(0, 0, videoWidth, videoHeight);
 
@@ -315,12 +317,6 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
     //while (--i >= 0) {
     for (var ii = 0; ii < noImagePix; ii++) {
         pix = img_u8.data[ii];
-
-        //Get the RGB value for colour plane inflection points
-        pixR = imageData.data[ii];
-        pixG = imageData.data[ii + 1];
-        pixB = imageData.data[ii + 2];
-
 
         if ((ii != 0) && (ii % 640 == 0)) {
             row++;
@@ -385,115 +381,129 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
                 //Allt annat, kan tas om hand om också... typ palla..., FAST hé é intressante punkte
             } else {
                 data_u32[ii] = alpha | (pix << 16) | (pix << 8) | pix; //white
-
-                //Testa lite grann
-                let upperLeftR = imageData.data[ii - 4 - 4 * videoWidth];
-                let upperLeftG = imageData.data[ii - 4 - 4 * videoWidth + 1];
-                let upperLeftB = imageData.data[ii - 4 - 4 * videoWidth + 2];
-
-                let upperCenterR = imageData.data[ii - 4 * videoWidth];
-                let upperCenterG = imageData.data[ii - 4 * videoWidth + 1];
-                let upperCenterB = imageData.data[ii - 4 * videoWidth + 2];
-
-                let upperRightR = imageData.data[ii + 4 - 4 * videoWidth];
-                let upperRightG = imageData.data[ii + 4 - 4 * videoWidth + 1];
-                let upperRightB = imageData.data[ii + 4 - 4 * videoWidth + 2];
-
-                let centerLeftR = imageData.data[ii - 4];
-                let centerLeftG = imageData.data[ii - 4 + 1];
-                let centerLeftB = imageData.data[ii - 4 + 2];
-
-                let centerRightR = imageData.data[ii + 4];
-                let centerRightG = imageData.data[ii + 4 + 1];
-                let centerRightB = imageData.data[ii + 4 + 2];
-
-                let lowerLeftR = imageData.data[ii - 4 + 4 * videoWidth];
-                let lowerLeftG = imageData.data[ii - 4 + 4 * videoWidth + 1];
-                let lowerLeftB = imageData.data[ii - 4 + 4 * videoWidth + 2];
-
-                let lowerCenterR = imageData.data[ii + 4 * videoWidth];
-                let lowerCenterG = imageData.data[ii + 4 * videoWidth + 1];
-                let lowerCenterB = imageData.data[ii + 4 * videoWidth + 2];
-
-                let lowerRightR = imageData.data[ii + 4 + videoWidth];
-                let lowerRightG = imageData.data[ii + 4 + videoWidth + 1];
-                let lowerRightB = imageData.data[ii + 4 + videoWidth + 2];
-
-                //Upper left
-                if ((Math.abs(1 - (upperLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (upperLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (upperLeftB / pixB)) > pctPartOf)) {
-                    data_u32[ii - 1 - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else if ((upperLeftR / pixR > pctPartOf) && ((upperLeftG / pixG) > pctPartOf) && ((upperLeftB / pixB) > pctPartOf)) {
-                    data_u32[ii - 1 - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else {
-                    data_u32[ii - 1 - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
-                }
-
-                //Upper center
-                if ((Math.abs(1 - (upperCenterR / pixR)) < pctPartOf) && (Math.abs(1 - (upperCenterG / pixG)) < pctPartOf) && (Math.abs(1 - (upperCenterB / pixB)) > pctPartOf)) {
-                    data_u32[ii - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else if ((upperCenterR / pixR > pctPartOf) && ((upperCenterG / pixG) > pctPartOf) && ((upperCenterB / pixB) > pctPartOf)) {
-                    data_u32[ii - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else {
-                    data_u32[ii - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
-                }
-
-                //Upper right
-                if ((Math.abs(1 - (upperRightR / pixR)) < pctPartOf) && (Math.abs(1 - (upperRightG / pixG)) < pctPartOf) && (Math.abs(1 - (upperRightB / pixB)) > pctPartOf)) {
-                    data_u32[ii + 1 - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else if ((upperRightR / pixR > pctPartOf) && ((upperRightG / pixG) > pctPartOf) && ((upperRightB / pixB) > pctPartOf)) {
-                    data_u32[ii + 1 - videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else {
-                    data_u32[ii + 1 - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
-                }
-
-                //Center left
-                if ((Math.abs(1 - (centerLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (centerLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (centerLeftB / pixB)) > pctPartOf)) {
-                    data_u32[ii - 1] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else if ((centerLeftR / pixR > pctPartOf) && ((centerLeftG / pixG) > pctPartOf) && ((centerLeftB / pixB) > pctPartOf)) {
-                    data_u32[ii - 1] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else {
-                    data_u32[ii - 1] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
-                }
-
-                //Center right
-                if ((Math.abs(1 - (centerRightR / pixR)) < pctPartOf) && (Math.abs(1 - (centerRightG / pixG)) < pctPartOf) && (Math.abs(1 - (centerRightB / pixB)) > pctPartOf)) {
-                    data_u32[ii + 1] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else if ((centerRightR / pixR > pctPartOf) && ((centerRightG / pixG) > pctPartOf) && ((centerRightB / pixB) > pctPartOf)) {
-                    data_u32[ii + 1] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else {
-                    data_u32[ii + 1] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
-                }
-
-
-                //Lower left
-                if ((Math.abs(1 - (lowerLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerLeftB / pixB)) > pctPartOf)) {
-                    data_u32[ii - 1 + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else if ((lowerLeftR / pixR > pctPartOf) && ((lowerLeftG / pixG) > pctPartOf) && ((lowerLeftB / pixB) > pctPartOf)) {
-                    data_u32[ii - 1 + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else {
-                    data_u32[ii - 1 + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
-                }
-
-                //Upper center
-                if ((Math.abs(1 - (lowerCenterR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerCenterG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerCenterB / pixB)) > pctPartOf)) {
-                    data_u32[ii + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else if ((lowerCenterR / pixR > pctPartOf) && ((lowerCenterG / pixG) > pctPartOf) && ((lowerCenterB) / pixB > pctPartOf)) {
-                    data_u32[ii + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else {
-                    data_u32[ii + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
-                }
-
-                //Upper right
-                if ((Math.abs(1 - (lowerRightR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerRightG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerRightB / pixB)) > pctPartOf)) {
-                    data_u32[ii + 1 + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else if ((lowerRightR / pixR > pctPartOf) && ((lowerRightG / pixG) > pctPartOf) && ((lowerRightB / pixB) > pctPartOf)) {
-                    data_u32[ii + 1 + videoWidth] = alpha | (pix << 16) | (pix << 8) | pix; //white
-                } else {
-                    data_u32[ii + 1 + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
-                }
-                //Testa lite grann(SLUT)
+                img_u8Inflection[ii] = 255;
             }
             //En första liden liden Bloody Stupid Johnson lina(SLUT)
+        }
+    }
+
+    for (ii = 0; ii < videoWidth * videoHeight; ii++) {
+        //Get the RGB value for colour plane inflection points
+        pixR = imageData.data[ii];
+        pixG = imageData.data[ii + 1];
+        pixB = imageData.data[ii + 2];
+
+
+        if ((ii != 0) && (ii % 640 == 0)) {
+            row++;
+        }
+        //Testa lite grann
+        let upperLeftR = imageData.data[ii - 4 - 4 * videoWidth];
+        let upperLeftG = imageData.data[ii - 4 - 4 * videoWidth + 1];
+        let upperLeftB = imageData.data[ii - 4 - 4 * videoWidth + 2];
+
+        let upperCenterR = imageData.data[ii - 4 * videoWidth];
+        let upperCenterG = imageData.data[ii - 4 * videoWidth + 1];
+        let upperCenterB = imageData.data[ii - 4 * videoWidth + 2];
+
+        let upperRightR = imageData.data[ii + 4 - 4 * videoWidth];
+        let upperRightG = imageData.data[ii + 4 - 4 * videoWidth + 1];
+        let upperRightB = imageData.data[ii + 4 - 4 * videoWidth + 2];
+
+        let centerLeftR = imageData.data[ii - 4];
+        let centerLeftG = imageData.data[ii - 4 + 1];
+        let centerLeftB = imageData.data[ii - 4 + 2];
+
+        let centerRightR = imageData.data[ii + 4];
+        let centerRightG = imageData.data[ii + 4 + 1];
+        let centerRightB = imageData.data[ii + 4 + 2];
+
+        let lowerLeftR = imageData.data[ii - 4 + 4 * videoWidth];
+        let lowerLeftG = imageData.data[ii - 4 + 4 * videoWidth + 1];
+        let lowerLeftB = imageData.data[ii - 4 + 4 * videoWidth + 2];
+
+        let lowerCenterR = imageData.data[ii + 4 * videoWidth];
+        let lowerCenterG = imageData.data[ii + 4 * videoWidth + 1];
+        let lowerCenterB = imageData.data[ii + 4 * videoWidth + 2];
+
+        let lowerRightR = imageData.data[ii + 4 + videoWidth];
+        let lowerRightG = imageData.data[ii + 4 + videoWidth + 1];
+        let lowerRightB = imageData.data[ii + 4 + videoWidth + 2];
+
+        if (img_u8Inflection[ii] > 0) {
+            //Upper left
+            if ((Math.abs(1 - (upperLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (upperLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (upperLeftB / pixB)) > pctPartOf)) {
+                //data_u32[ii - 1 - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((upperLeftR / pixR > pctPartOf) && ((upperLeftG / pixG) > pctPartOf) && ((upperLeftB / pixB) > pctPartOf)) {
+                //data_u32[ii - 1 - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                //data_u32[ii - 1 - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Upper center
+            if ((Math.abs(1 - (upperCenterR / pixR)) < pctPartOf) && (Math.abs(1 - (upperCenterG / pixG)) < pctPartOf) && (Math.abs(1 - (upperCenterB / pixB)) > pctPartOf)) {
+                data_u32[ii - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((upperCenterR / pixR > pctPartOf) && ((upperCenterG / pixG) > pctPartOf) && ((upperCenterB / pixB) > pctPartOf)) {
+                data_u32[ii - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Upper right
+            if ((Math.abs(1 - (upperRightR / pixR)) < pctPartOf) && (Math.abs(1 - (upperRightG / pixG)) < pctPartOf) && (Math.abs(1 - (upperRightB / pixB)) > pctPartOf)) {
+                //data_u32[ii + 1 - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((upperRightR / pixR > pctPartOf) && ((upperRightG / pixG) > pctPartOf) && ((upperRightB / pixB) > pctPartOf)) {
+                //data_u32[ii + 1 - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                //data_u32[ii + 1 - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Center left
+            if ((Math.abs(1 - (centerLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (centerLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (centerLeftB / pixB)) > pctPartOf)) {
+                data_u32[ii - 1] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((centerLeftR / pixR > pctPartOf) && ((centerLeftG / pixG) > pctPartOf) && ((centerLeftB / pixB) > pctPartOf)) {
+                data_u32[ii - 1] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii - 1] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Center right
+            if ((Math.abs(1 - (centerRightR / pixR)) < pctPartOf) && (Math.abs(1 - (centerRightG / pixG)) < pctPartOf) && (Math.abs(1 - (centerRightB / pixB)) > pctPartOf)) {
+                data_u32[ii + 1] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((centerRightR / pixR > pctPartOf) && ((centerRightG / pixG) > pctPartOf) && ((centerRightB / pixB) > pctPartOf)) {
+                data_u32[ii + 1] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii + 1] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+
+            //Lower left
+            if ((Math.abs(1 - (lowerLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerLeftB / pixB)) > pctPartOf)) {
+                //data_u32[ii - 1 + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((lowerLeftR / pixR > pctPartOf) && ((lowerLeftG / pixG) > pctPartOf) && ((lowerLeftB / pixB) > pctPartOf)) {
+                //data_u32[ii - 1 + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                //data_u32[ii - 1 + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Lower center
+            if ((Math.abs(1 - (lowerCenterR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerCenterG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerCenterB / pixB)) > pctPartOf)) {
+                data_u32[ii + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((lowerCenterR / pixR > pctPartOf) && ((lowerCenterG / pixG) > pctPartOf) && ((lowerCenterB) / pixB > pctPartOf)) {
+                data_u32[ii + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Lower right
+            if ((Math.abs(1 - (lowerRightR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerRightG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerRightB / pixB)) > pctPartOf)) {
+                //data_u32[ii + 1 + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((lowerRightR / pixR > pctPartOf) && ((lowerRightG / pixG) > pctPartOf) && ((lowerRightB / pixB) > pctPartOf)) {
+                //data_u32[ii + 1 + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                //data_u32[ii + 1 + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+            //Testa lite grann(SLUT)
         }
     }
 
@@ -1142,6 +1152,36 @@ function digitizeColour(imageObj) {
     context.putImageData(imageData, 0, 0);
 }
 //Digitalisere färgerne, d v s modulo lidda grann(SLUT)
+
+//Extrahera dominerande färg
+function extractMajorColour(context) {
+    let imageData = context.getImageData(0, 0, videoWidth, videoHeight);
+    for (let i = 0; i < imageData.data.length; i += 4) {
+        let range = 40;
+        let pctDiff = 0.2;
+
+        // red
+        if ((Math.abs(1 - (imageData.data[i] / imageData.data[i + 1])) > pctDiff) && (Math.abs(1 - (imageData.data[i] / imageData.data[i + 2])) > pctDiff)) {
+            imageData.data[i] = Math.floor(imageData.data[i] / (range)) * range;
+            imageData.data[i + 1] = 0;
+            imageData.data[i + 2] = 0;
+        } else if ((Math.abs(1 - (imageData.data[i + 1] / imageData.data[i])) > pctDiff) && (Math.abs(1 - (imageData.data[i + 1] / imageData.data[i + 2])) > pctDiff)) {
+            // green
+            imageData.data[i + 1] = Math.floor(imageData.data[i + 1] / (range)) * range;
+            imageData.data[i] = 0;
+            imageData.data[i + 2] = 0;
+        } else if ((Math.abs(1 - (imageData.data[i + 2] / imageData.data[i]) > pctDiff)) && (Math.abs(1 - (imageData.data[i + 2] / imageData.data[i + 1])) > pctDiff)) {
+            // blue
+            imageData.data[i + 2] = Math.floor(imageData.data[i + 2] / (range)) * range;
+            imageData.data[i] = 0;
+            imageData.data[i + 1] = 0;
+        }
+    }
+
+    // overwrite original image
+    context.putImageData(imageData, 0, 0);
+}
+//Extrahera dominerande färg(SLUT)
 
 //En demoapp måste man ju ha, liesom, hallå...
 function demo_app() {
