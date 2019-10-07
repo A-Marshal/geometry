@@ -16,10 +16,11 @@ let maxHiThX = -999, maxHiThXPrev = -999, minHiThX = 999, minHiThXPrev = 999, ma
 //Variabler för canny linjer, ROI
 let sumCannyX = 0, sumCannyY = 0, maxCannyX = -999, maxCannyY = -999, minCannyX = 999, minCannyY = 999;
 let countCannyROI = 0;
+let countWhiteCannyROI = 0;
 
 //Variabler för att kvantifiera/sortera/möga med FAST punkterna
 let maxCornersScore = -999;
-minCornersScore = 999;
+let minCornersScore = 999;
 
 //Variabler för fokusareors kvadranter, webcamFeed, röd fokusarea
 let sumLowThXQ = [];
@@ -111,17 +112,17 @@ let roiWidth, roiHeight, roiX0, roiY0, minCornerScoreForStationary;
 let gui, options;
 
 let demo_opt = function () {
-    this.roiWidth = 458;
-    this.roiHeight = 224;
-    this.roiX0 = 49;
+    this.roiWidth = 485;
+    this.roiHeight = 229;
+    this.roiX0 = 98;
     this.roiY0 = 58;
     this.minCornerScoreForStationary = 50;
 }
 
 //Förinställt gör livet enklare att hitta tv'n blann annet.
-roiWidth = 458;
-roiHeight = 224;
-roiX0 = 49;
+roiWidth = 485;
+roiHeight = 229;
+roiX0 = 98;
 roiY0 = 58;
 minCornerScoreForStationary = 50;
 
@@ -152,7 +153,7 @@ function canvasVideoFeed(imageObj) {
     let innanMitt, efterMitt;
     innanMitt = Date.now();
     //drawCannyLines(context, allThZero);
-    bloodyStupidJohnsonCannyLines0002(context, allThZero);
+    bloodyStupidJohnsonCannyLines0002(context);
     drawFastPoints(contextMellan, context);
     extractMajorColour(context);
     efterMitt = Date.now();
@@ -163,6 +164,7 @@ function canvasVideoFeed(imageObj) {
     pSkiteria.innerHTML += "<br>Elapsed time for my mög: " + (efterMitt - innanMitt) + " (ms)";
     pSkiteria.innerHTML += "<br>Max FAST score in ROI: " + maxCornersScore;
     pSkiteria.innerHTML += "<br>Min FAST score in ROI: " + minCornersScore;
+    pSkiteria.innerHTML += "<br>White canny point count in ROI: " + countWhiteCannyROI;
 
     //Uppdatera range slider variablernas värden
     //Update roiWidth from slider
@@ -285,7 +287,7 @@ function bloodyStupidJohnsonCannyLines(ctxx, allThZero) {
     ctxx.putImageData(imageData, 0, 0);
 }
 
-function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
+function bloodyStupidJohnsonCannyLines0002(ctxx) {
     let img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8C1_t | jsfeat.C1_t);
     let img_u8Inflection = [];
 
@@ -304,6 +306,7 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
     minCannyX = 999;
     minCannyY = 999;
     countCannyROI = 0;
+    countWhiteCannyROI = 0;
 
     jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
 
@@ -382,6 +385,7 @@ function bloodyStupidJohnsonCannyLines0002(ctxx, allThZero) {
             } else {
                 data_u32[ii] = alpha | (pix << 16) | (pix << 8) | pix; //white
                 img_u8Inflection[ii] = 255;
+                countWhiteCannyROI++;
             }
             //En första liden liden Bloody Stupid Johnson lina(SLUT)
         }
@@ -1157,27 +1161,33 @@ function digitizeColour(imageObj) {
 function extractMajorColour(context) {
     let imageData = context.getImageData(0, 0, videoWidth, videoHeight);
     for (let i = 0; i < imageData.data.length; i += 4) {
-        let range = 40;
-        let pctDiff = 0.2;
-        let minForWhite = 220;
+        let range = 51;
+        let pctDiff = 4;
+        let minForWhite = 230;
+        let maxForBlack = 25;
 
         // red
-        if ((imageData.data[i] < minForWhite) && (imageData.data[i + 1] < minForWhite) && (imageData.data[i + 2] < minForWhite)) {
-            if ((Math.abs(1 - (imageData.data[i] / imageData.data[i + 1])) > pctDiff) && (Math.abs(1 - (imageData.data[i] / imageData.data[i + 2])) > pctDiff)) {
-                imageData.data[i] = Math.floor(imageData.data[i] / (range)) * range;
+        if (((imageData.data[i] < minForWhite) && (imageData.data[i + 1] < minForWhite) && (imageData.data[i + 2] < minForWhite)) || (imageData.data[i] < maxForBlack) || (imageData.data[i + 1] < maxForBlack) || (imageData.data[i + 3])) {
+            if (((imageData.data[i] / imageData.data[i + 1]) > pctDiff) && ((imageData.data[i] / imageData.data[i + 2]) > pctDiff)) {
+                imageData.data[i] = Math.ceil(imageData.data[i] / range) * range;
                 imageData.data[i + 1] = 0;
                 imageData.data[i + 2] = 0;
-            } else if ((Math.abs(1 - (imageData.data[i + 1] / imageData.data[i])) > pctDiff) && (Math.abs(1 - (imageData.data[i + 1] / imageData.data[i + 2])) > pctDiff)) {
+            } else if (((imageData.data[i + 1] / imageData.data[i]) > pctDiff) && ((imageData.data[i + 1] / imageData.data[i + 2]) > pctDiff)) {
                 // green
-                imageData.data[i + 1] = Math.floor(imageData.data[i + 1] / (range)) * range;
+                imageData.data[i + 1] = Math.ceil(imageData.data[i + 1] / range) * range;
                 imageData.data[i] = 0;
                 imageData.data[i + 2] = 0;
-            } else if ((Math.abs(1 - (imageData.data[i + 2] / imageData.data[i]) > pctDiff)) && (Math.abs(1 - (imageData.data[i + 2] / imageData.data[i + 1])) > pctDiff)) {
+            } else if (((imageData.data[i + 2] / imageData.data[i]) > pctDiff) && ((imageData.data[i + 2] / imageData.data[i + 1]) > pctDiff)) {
                 // blue
-                imageData.data[i + 2] = Math.floor(imageData.data[i + 2] / (range)) * range;
+                imageData.data[i + 2] = Math.ceil(imageData.data[i + 2] / range) * range;
                 imageData.data[i] = 0;
                 imageData.data[i + 1] = 0;
             }
+        } else {
+            imageData.data[i] = Math.floor(imageData.data[i] / range) * range;
+            imageData.data[i + 1] = Math.floor(imageData.data[i + 1] / range) * range;
+            imageData.data[i + 2] = Math.floor(imageData.data[i + 2] / range) * range;
+            imageData.data[i + 3] = imageData.data[i + 3]
         }
     }
 
