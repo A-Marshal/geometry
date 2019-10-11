@@ -156,17 +156,23 @@ function canvasVideoFeed(imageObj) {
     //drawCannyLines(context, allThZero);
     bloodyStupidJohnsonCannyLines0002(context);
     drawFastPoints(contextMellan, context);
-    extractMajorColour(context);
+    //extractMajorColour(context);
+    extractMajorColour0002(context);
     efterMitt = Date.now();
     //testa av timing(SLUT)
 
     let pSkiteria = document.getElementById("count");
+    var fontColour = "#00AA00";
+
+    if (allThZero) {
+        fontColour = "#AA0000";
+    }
 
     pSkiteria.innerHTML += "<br>Elapsed time for my mög: " + (efterMitt - innanMitt) + " (ms)";
     pSkiteria.innerHTML += "<br>Max FAST score in ROI: " + maxCornersScore;
     pSkiteria.innerHTML += "<br>Min FAST score in ROI: " + minCornersScore;
     pSkiteria.innerHTML += "<br>White canny point count Tot: " + countWhiteCannyTot;
-    pSkiteria.innerHTML += "<br>White canny point count in ROI: " + countWhiteCannyROI;
+    pSkiteria.innerHTML += "<br>White canny point count in ROI: " + "<font color=" + fontColour + ">" + countWhiteCannyROI + "</font>";
     pSkiteria.innerHTML += "<br>Total Canny point count in ROI: " + countCannyROI;
 
     //Uppdatera range slider variablernas värden
@@ -1171,7 +1177,7 @@ function extractMajorColour(context) {
         let range = 100;
         let pctDiff = 4;
         let minForWhite = 230;
-        let maxForBlack = 25;
+        let maxForBlack = 20;
 
         // red
         if (((imageData.data[i] < minForWhite) && (imageData.data[i + 1] < minForWhite) && (imageData.data[i + 2] < minForWhite)) || (imageData.data[i] < maxForBlack) || (imageData.data[i + 1] < maxForBlack) || (imageData.data[i + 3])) {
@@ -1195,6 +1201,51 @@ function extractMajorColour(context) {
             imageData.data[i + 1] = Math.floor(imageData.data[i + 1] / range) * range;
             imageData.data[i + 2] = Math.floor(imageData.data[i + 2] / range) * range;
             imageData.data[i + 3] = imageData.data[i + 3]
+        }
+    }
+
+    // overwrite original image
+    context.putImageData(imageData, 0, 0);
+}
+
+function extractMajorColour0002(context) {
+    let imageData = context.getImageData(0, 0, videoWidth, videoHeight);
+    for (let i = 0; i < imageData.data.length; i += 4) {
+        let range = 100;
+        let whiteBlackRange = 21;
+        let pctDiff = 4;
+        let minForWhite = 230;
+        let maxForBlack = 50;
+
+        // red
+        if (((imageData.data[i] < minForWhite) && (imageData.data[i + 1] < minForWhite) && (imageData.data[i + 2] < minForWhite)) || (imageData.data[i] < maxForBlack) || (imageData.data[i + 1] < maxForBlack) || (imageData.data[i + 3])) {
+            if (((imageData.data[i] / imageData.data[i + 1]) > pctDiff) && ((imageData.data[i] / imageData.data[i + 2]) > pctDiff)) {
+                imageData.data[i] = Math.ceil(imageData.data[i] / range) * range;
+                imageData.data[i + 1] = 0;
+                imageData.data[i + 2] = 0;
+            } else if (((imageData.data[i + 1] / imageData.data[i]) > pctDiff) && ((imageData.data[i + 1] / imageData.data[i + 2]) > pctDiff)) {
+                // green
+                imageData.data[i + 1] = Math.ceil(imageData.data[i + 1] / range) * range;
+                imageData.data[i] = 0;
+                imageData.data[i + 2] = 0;
+            } else if (((imageData.data[i + 2] / imageData.data[i]) > pctDiff) && ((imageData.data[i + 2] / imageData.data[i + 1]) > pctDiff)) {
+                // blue
+                imageData.data[i + 2] = Math.ceil(imageData.data[i + 2] / range) * range;
+                imageData.data[i] = 0;
+                imageData.data[i + 1] = 0;
+            }
+        } else {
+            if ((imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3 > minForWhite) {
+                imageData.data[i] = Math.floor(imageData.data[i] / whiteBlackRange) * whiteBlackRange;
+                imageData.data[i + 1] = Math.floor(imageData.data[i + 1] / whiteBlackRange) * whiteBlackRange;
+                imageData.data[i + 2] = Math.floor(imageData.data[i + 2] / whiteBlackRange) * whiteBlackRange;
+                imageData.data[i + 3] = imageData.data[i + 3]
+            } else {
+                imageData.data[i] = Math.ceil(imageData.data[i] / whiteBlackRange) * whiteBlackRange;
+                imageData.data[i + 1] = Math.ceil(imageData.data[i + 1] / whiteBlackRange) * whiteBlackRange;
+                imageData.data[i + 2] = Math.ceil(imageData.data[i + 2] / whiteBlackRange) * whiteBlackRange;
+                imageData.data[i + 3] = imageData.data[i + 3]
+            }
         }
     }
 
