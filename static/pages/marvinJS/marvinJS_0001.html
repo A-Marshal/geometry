@@ -6,13 +6,21 @@
 </head>
 
 <body data-rsssl=1>
-  <canvas id="canvas" width="800" height="500"></canvas>
   <input type="file" id="files" name="files[]" multiple />
+  <canvas id="canvas" width="800" height="500"></canvas>
+  <video autoplay="true" id="videoElement" width="640" height="480"></video>
+  <canvas id="videoCanvas" width="640" height="480"></canvas>
+  <canvas id="mellanLager" width="640" height="480" style="display: none"></canvas>
+  <p id="count"></p>
   <output id="list"></output>
+
+  <script type="text/javascript" src="../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
+  <script type="text/javascript" src="../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
+  <script type="text/javascript" src="../../js/viMögarLiddaGrann.js"></script>
 
   <script>
     //Example is from: https://www.html5canvastutorials.com/advanced/html5-canvas-get-image-data-tutorial/
-    
+
     //Globals
     let imageObj = new Image();
 
@@ -62,9 +70,13 @@
     }
 
     imageObj.onload = function () {
-      drawImage(this);
+      //drawImage(this);
+
+      //Skicka objekt, eller använd global, inte hårdkodade id'n
+      demo_app();
+      canvasVideoFeed(this);
     };
-    imageObj.src = '../../imgs/Doorkeys.jpeg';
+    imageObj.src = '../../imgs/2019 Nobel prize  - exoplanets.jpg';
   </script>
 </body>
 
