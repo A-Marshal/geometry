@@ -23,6 +23,7 @@
 
     //Globals
     let imageObj = new Image();
+    let fileName = "Doorkeys.jpeg";
 
     //Event listeners
     document.getElementById('files').addEventListener('change', handleFileSelect, false);
@@ -41,7 +42,12 @@
           '</li>');
       }
       document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-      document.getElementById('list').innerHTML += 'TEST, length of output is: ' + output.length;
+
+      //Vi mögar
+      fileName = output[1];
+      imageObj.src = '../../imgs/' + fileName;
+      canvasVideoFeed(imageObj);
+      //Vi mögar(SLUT)
     }
 
     function drawImage(imageObj) {
@@ -76,7 +82,7 @@
       demo_app();
       canvasVideoFeed(this);
     };
-    imageObj.src = '../../imgs/2019 Nobel prize  - exoplanets.jpg';
+    imageObj.src = '../../imgs/' + fileName;
   </script>
 </body>
 
