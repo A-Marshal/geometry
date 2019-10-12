@@ -7,6 +7,8 @@
 
 <body data-rsssl=1>
   <input type="file" id="files" name="files[]" multiple />
+  <p>Zoom canvas:</p>
+  <input type="range" id="zoomRange" min="1" max="10" value="1">
   <canvas id="canvas" width="800" height="500"></canvas>
   <video autoplay="true" id="videoElement" width="640" height="480"></video>
   <canvas id="videoCanvas" width="640" height="480"></canvas>
@@ -27,9 +29,10 @@
 
     //Event listeners
     document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    document.getElementById('zoomRange').addEventListener('change', handleFileSelect, false);
 
 
-    //Functions
+    //Event functions
     function handleFileSelect(evt) {
       var files = evt.target.files; // FileList object
 
@@ -51,6 +54,11 @@
       canvasVideoFeed(imageObj);
       //Vi mögar(SLUT)
     }
+
+    //Nu jumlar nu ska vi möga té en jumla eventhandler, tydligen, istf att röga... jorå
+    //Nu jumlar nu ska vi möga té en jumla eventhandler, tydligen, istf att röga... jorå(SLUT)
+
+    //Function functions
 
     function drawImage(imageObj) {
       var canvas = document.getElementById('canvas');
