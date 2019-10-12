@@ -2,107 +2,104 @@
 <html>
 
 <head>
-  <link rel="stylesheet" type="text/css" href="../../css/base.css">
+  <title>Find Text Regions in Images using Javascript</title>
+  <!-- Github. -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- END - Github. -->
+
+
+  <link rel="stylesheet" type="text/css" href="../../css/marvinJS/main.css">
+  <link rel="stylesheet" type="text/css" href="../../css/marvinJS/hlformat.css">
+
+  <style>
+
+  </style>
+
 </head>
 
-<body data-rsssl=1>
-  <input type="file" id="files" name="files[]" multiple />
-  <p>Zoom canvas:</p>
-  <input type="range" id="zoomRange" min="1" max="10" value="1">
-  <canvas id="canvas" width="800" height="500"></canvas>
-  <video autoplay="true" id="videoElement" width="640" height="480"></video>
-  <canvas id="videoCanvas" width="640" height="480"></canvas>
-  <canvas id="mellanLager" width="640" height="480" style="display: none"></canvas>
-  <p id="count"></p>
-  <output id="list"></output>
+<body>
+  <div id="mainContent" class="mainContent">
 
-  <script type="text/javascript" src="../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
-  <script type="text/javascript" src="../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
-  <script type="text/javascript" src="../../js/viMögarLiddaGrann0002.js"></script>
+    <h2>Find Text Regions</h2>
+
+    This example demonstrates how to find regions containing texts in images. It can be used for:
+
+    <br /><br />
+    <li>Previous step of character segmentation and recognition in a OCR solution.</li>
+    <li>Improve accuracy using third-party OCR modules. Tests have demonstrated that solutions using OCR modules like
+      <a href="https://github.com/tesseract-ocr/tesseract/wiki">Tesseract</a> can improve accuracy submitting just the
+      image regions
+      with text.</li>
+    <li>Improve performance of OCR based solutions by reducing the amount of pixels to be processed.</li>
+
+    <br /><br />
+
+    The algorithm provided by Marvin just search for regions with an specific frequency of constrast variation in the
+    horizontal
+    axis. Horizontal lines segments with such pattern are grouped and the text region is determined. In some cases,
+    false positive
+    regions are detected, but a further step can be used to remove it based on its characteristics.
+
+    <br /><br /><b>Live Demo:</b><br />
+
+    <div style="width:500px; margin:auto">
+      <img src="../../imgs/Roadsign.jpg"></img>
+      <canvas id="canvas_1" width="640" height="480"></canvas>
+    </div>
+    <br />
+    <div style="width:601px; margin:auto">
+      <img src="../../imgs/Passport.png"></img>
+      <canvas id="canvas_2" width="640" height="480"></canvas>
+    </div>
+
+    </br>
+  </div>
+
+
+  <script src="../../js/marvinJS/jquery-3.1.1.js"></script>
+  <script src="../../js/marvinJS/marvinj-1.0.js"></script>
+  <script src="../../js/marvinJS/UI.js"></script>
+  <!-- Go to www.addthis.com/dashboard to customize your tools -->
+  <script type="text/javascript" src="../../js/marvinJS/addThis.js"></script>
 
   <script>
-    //Example is from: https://www.html5canvastutorials.com/advanced/html5-canvas-get-image-data-tutorial/
+    // Canvas and Images 
+var canvas1 = document.getElementById("canvas_1"); 
+var canvas2 = document.getElementById("canvas_2"); 
 
-    //Globals
-    let imageObj = new Image();
-    let fileName = "Geometriska_former_2d.png";
+// Load Road image 
+var imageRoad = new MarvinImage(); 
+imageRoad.load("https://i.imgur.com/NOAqlBx.jpg", imageRoadLoaded); 
 
-    //Event listeners
-    document.getElementById('files').addEventListener('change', handleFileSelect, false);
-    document.getElementById('zoomRange').addEventListener('change', rangeSlideChange, false);
+// Load Passport image 
+var imagePassport = new MarvinImage(); 
+imagePassport.load("https://i.imgur.com/WuS6M6a.png", imagePassportLoaded); 
 
+// Find Text regions in the road image 
+function imageRoadLoaded(){ 
+	var segments = Marvin.findTextRegions(imageRoad, 10, 20, 70, 200); 
+	drawSegments(segments, imageRoad); 
+	imageRoad.draw(canvas1); 
+} 
 
-    //Event functions
-    function handleFileSelect(evt) {
-      var files = evt.target.files; // FileList object
+// Find Text regions in the passport image 
+function imagePassportLoaded(){ 
+	var segments = Marvin.findTextRegions(imagePassport, 15, 8, 30, 150); 
+	drawSegments(segments, imagePassport); 
+	imagePassport.draw(canvas2); 
+} 
 
-      // files is a FileList of File objects. List some properties.
-      var output = [];
-      for (var i = 0, f; f = files[i]; i++) {
-        output.push('<li><strong>', escape(f.name), '</strong><br> (', f.type || 'n/a', ') - ',
-          f.size, ' bytes,<br> last modified: ',
-          f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-          '</li>');
-      }
-      document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-
-      //Vi mögar
-      fileName = output[1];
-      imageObj.width = 0;
-      imageObj.height = 0;
-      imageObj.src = '../../imgs/' + fileName;
-      canvasVideoFeed(imageObj);
-      //Vi mögar(SLUT)
-    }
-
-    //Nu jumlar nu ska vi möga té en jumla eventhandler, tydligen, istf att röga... jorå
-    function rangeSlideChange(evt) {
-      let zoomFactor = this.value;
-      let cvs = document.getElementById('canvas');
-      let ctx = cvs.getContext('2d');
-      ctx.save();
-      ctx.scale(zoomFactor, zoomFactor);
-      ctx.stroke();
-      ctx.restore();
-    }
-    //Nu jumlar nu ska vi möga té en jumla eventhandler, tydligen, istf att röga... jorå(SLUT)
-
-    //Function functions
-
-    function drawImage(imageObj) {
-      var canvas = document.getElementById('canvas');
-      var context = canvas.getContext('2d');
-      var x = 100;
-      var y = 100;
-
-      context.drawImage(imageObj, x, y);
-
-      var imageData = context.getImageData(x, y, imageObj.width, imageObj.height);
-      var data = imageData.data;
-
-      for (var i = 0; i < data.length; i += 4) {
-        var brightness = 0.333 * data[i] + 0.333 * data[i + 1] + 0.333 * data[i + 2];
-        // red
-        data[i] = brightness;
-        // green
-        data[i + 1] = brightness;
-        // blue
-        data[i + 2] = brightness;
-      }
-
-      // overwrite original image
-      context.putImageData(imageData, x, y);
-    }
-
-    imageObj.onload = function () {
-      //drawImage(this);
-
-      //Skicka objekt, eller använd global, inte hårdkodade id'n
-      demo_app();
-      canvasVideoFeed(this);
-    };
-    imageObj.src = '../../imgs/' + fileName;
+function drawSegments(segments, image){ 
+	for(var i in segments){ 
+		var seg = segments[i];
+    // Skip segments that are too small
+		if(seg.height >= 5){ 
+			image.drawRect(seg.x1, seg.y1-5, seg.width, seg.height+10, 0xFFFF0000); 
+			image.drawRect(seg.x1+1, seg.y1-4, seg.width-2, seg.height+8, 0xFFFF0000); 
+		} 
+	} 
+} 
   </script>
-</body>
 
-</html>
+</body>
+<html>
