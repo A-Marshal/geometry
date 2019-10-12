@@ -113,18 +113,18 @@ let roiWidth, roiHeight, roiX0, roiY0, minCornerScoreForStationary;
 let gui, options;
 
 let demo_opt = function () {
-    this.roiWidth = 485;
-    this.roiHeight = 229;
-    this.roiX0 = 98;
-    this.roiY0 = 58;
+    this.roiWidth = 638;
+    this.roiHeight = 478;
+    this.roiX0 = 1;
+    this.roiY0 = 1;
     this.minCornerScoreForStationary = 50;
 }
 
 //Förinställt gör livet enklare att hitta tv'n blann annet.
-roiWidth = 485;
-roiHeight = 229;
-roiX0 = 98;
-roiY0 = 58;
+roiWidth = 638;
+roiHeight = 478;
+roiX0 = 1;
+roiY0 = 1;
 minCornerScoreForStationary = 50;
 
 //Mina variabler för att särskilja stationära vs icke - stationära FAST
@@ -922,7 +922,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
         ctxCanvas.stroke();
         ctxCanvas.beginPath();
         ctxCanvas.moveTo(minMidThX, (minMidThY + (maxMidThY - minMidThY) / 2));
-        ctxCanvas.lineTo(maxLowThX, (minMidThY + (maxMidThY - minMidThY) / 2));
+        ctxCanvas.lineTo(maxMidThX, (minMidThY + (maxMidThY - minMidThY) / 2));
         ctxCanvas.stroke();
         //Gröna rektangelns centerlijer(SLUT)
         ctxCanvas.beginPath();
@@ -1011,10 +1011,13 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     sumHiThXPrev = sumHiThX;
     sumHiThYPrev = sumHiThY;
     minLowThXPrev = minLowThX;
-    maxLowThYPrev = maxLowThX;
+    maxLowThXPrev = maxLowThX;
     minLowThYPrev = minLowThY;
     maxLowThYPrev = maxLowThY;
+    minMidThXPrev = minMidThX;
     maxMidThXPrev = maxMidThX;
+    minMidThYPrev = minMidThY;
+    maxMidThYPrev = maxMidThY;
     //Update frame geometry variables(SLUT)
 
     //Update frame quadrant geometry variables

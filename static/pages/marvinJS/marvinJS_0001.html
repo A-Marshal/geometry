@@ -16,14 +16,14 @@
 
   <script type="text/javascript" src="../../js/inspirit-jsfeat-4c7b336/build/jsfeat-min.js"></script>
   <script type="text/javascript" src="../../js/inspirit-jsfeat-4c7b336/src/dat.gui.min.js"></script>
-  <script type="text/javascript" src="../../js/viMögarLiddaGrann.js"></script>
+  <script type="text/javascript" src="../../js/viMögarLiddaGrann0002.js"></script>
 
   <script>
     //Example is from: https://www.html5canvastutorials.com/advanced/html5-canvas-get-image-data-tutorial/
 
     //Globals
     let imageObj = new Image();
-    let fileName = "Doorkeys.jpeg";
+    let fileName = "Geometriska_former_2d.png";
 
     //Event listeners
     document.getElementById('files').addEventListener('change', handleFileSelect, false);
@@ -45,6 +45,8 @@
 
       //Vi mögar
       fileName = output[1];
+      imageObj.width = 0;
+      imageObj.height = 0;
       imageObj.src = '../../imgs/' + fileName;
       canvasVideoFeed(imageObj);
       //Vi mögar(SLUT)

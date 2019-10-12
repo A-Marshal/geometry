@@ -916,7 +916,7 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
         ctxCanvas.stroke();
         ctxCanvas.beginPath();
         ctxCanvas.moveTo(minMidThX, (minMidThY + (maxMidThY - minMidThY) / 2));
-        ctxCanvas.lineTo(maxLowThX, (minMidThY + (maxMidThY - minMidThY) / 2));
+        ctxCanvas.lineTo(maxMidThX, (minMidThY + (maxMidThY - minMidThY) / 2));
         ctxCanvas.stroke();
         //Gröna rektangelns centerlijer(SLUT)
         ctxCanvas.beginPath();
@@ -1005,10 +1005,13 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     sumHiThXPrev = sumHiThX;
     sumHiThYPrev = sumHiThY;
     minLowThXPrev = minLowThX;
-    maxLowThYPrev = maxLowThX;
+    maxLowThXPrev = maxLowThX;
     minLowThYPrev = minLowThY;
     maxLowThYPrev = maxLowThY;
+    minMidThXPrev = minMidThX;
     maxMidThXPrev = maxMidThX;
+    minMidThYPrev = minMidThY;
+    maxMidThYPrev = maxMidThY;
     //Update frame geometry variables(SLUT)
 
     //Update frame quadrant geometry variables
