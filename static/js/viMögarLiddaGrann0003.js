@@ -1228,10 +1228,13 @@ function buttonClick() {
     let context = canvas.getContext('2d');
     let canvasBild = document.getElementById('viGlor');
     let contextBild = canvasBild.getContext('2d');
+    let canvasBildOrig = document.getElementById('viGlorOrig');
+    let contextBildOrig = canvasBildOrig.getContext('2d');
 
     let imageData = context.getImageData(0, 0, videoWidth, videoHeight);
 
     //Write video frame to canvases
+    contextBildOrig.drawImage(video, 0, 0, 640, 480);
     contextBild.putImageData(imageData, 0, 0);
 }
   //End simple button click function to obtain user entry

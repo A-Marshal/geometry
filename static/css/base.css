@@ -31,6 +31,12 @@ body {
       padding: 2px;
     }
   
+    .column50 {
+      float: left;
+      width: 50%;
+      padding: 2px;
+    }
+
     .column30 {
       float: left;
       width: 30%;
