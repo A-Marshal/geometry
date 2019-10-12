@@ -113,18 +113,18 @@ let roiWidth, roiHeight, roiX0, roiY0, minCornerScoreForStationary;
 let gui, options;
 
 let demo_opt = function () {
-    this.roiWidth = 638;
-    this.roiHeight = 478;
-    this.roiX0 = 1;
-    this.roiY0 = 1;
+    this.roiWidth = 485;
+    this.roiHeight = 229;
+    this.roiX0 = 98;
+    this.roiY0 = 58;
     this.minCornerScoreForStationary = 50;
 }
 
 //Förinställt gör livet enklare att hitta tv'n blann annet.
-roiWidth = 638;
-roiHeight = 478;
-roiX0 = 1;
-roiY0 = 1;
+roiWidth = 485;
+roiHeight = 229;
+roiX0 = 98;
+roiY0 = 58;
 minCornerScoreForStationary = 50;
 
 //Mina variabler för att särskilja stationära vs icke - stationära FAST
@@ -134,7 +134,7 @@ let stationaryNeighbourhood = 3;
 
 //Mainliknande funktion, styr vad som görs varje frame
 function canvasVideoFeed(imageObj) {
-    let canvas = document.getElementById('myCanvas');
+    let canvas = document.getElementById('videoCanvas');
     let context = canvas.getContext('2d');
     let canvasMellan = document.getElementById('mellanLager');
     let contextMellan = canvasMellan.getContext('2d');
@@ -156,23 +156,17 @@ function canvasVideoFeed(imageObj) {
     //drawCannyLines(context, allThZero);
     bloodyStupidJohnsonCannyLines0002(context);
     drawFastPoints(contextMellan, context);
-    //extractMajorColour(context);
-    extractMajorColour0002(context);
+    extractMajorColour(context);
     efterMitt = Date.now();
     //testa av timing(SLUT)
 
     let pSkiteria = document.getElementById("count");
-    var fontColour = "#00AA00";
-
-    if (allThZero) {
-        fontColour = "#AA0000";
-    }
 
     pSkiteria.innerHTML += "<br>Elapsed time for my mög: " + (efterMitt - innanMitt) + " (ms)";
     pSkiteria.innerHTML += "<br>Max FAST score in ROI: " + maxCornersScore;
     pSkiteria.innerHTML += "<br>Min FAST score in ROI: " + minCornersScore;
     pSkiteria.innerHTML += "<br>White canny point count Tot: " + countWhiteCannyTot;
-    pSkiteria.innerHTML += "<br>White canny point count in ROI: " + "<font color=" + fontColour + ">" + countWhiteCannyROI + "</font>";
+    pSkiteria.innerHTML += "<br>White canny point count in ROI: " + countWhiteCannyROI;
     pSkiteria.innerHTML += "<br>Total Canny point count in ROI: " + countCannyROI;
 
     //Uppdatera range slider variablernas värden
@@ -1180,7 +1174,7 @@ function extractMajorColour(context) {
         let range = 100;
         let pctDiff = 4;
         let minForWhite = 230;
-        let maxForBlack = 20;
+        let maxForBlack = 25;
 
         // red
         if (((imageData.data[i] < minForWhite) && (imageData.data[i + 1] < minForWhite) && (imageData.data[i + 2] < minForWhite)) || (imageData.data[i] < maxForBlack) || (imageData.data[i + 1] < maxForBlack) || (imageData.data[i + 3])) {
@@ -1210,51 +1204,6 @@ function extractMajorColour(context) {
     // overwrite original image
     context.putImageData(imageData, 0, 0);
 }
-
-function extractMajorColour0002(context) {
-    let imageData = context.getImageData(0, 0, videoWidth, videoHeight);
-    for (let i = 0; i < imageData.data.length; i += 4) {
-        let range = 100;
-        let whiteBlackRange = 21;
-        let pctDiff = 4;
-        let minForWhite = 230;
-        let maxForBlack = 50;
-
-        // red
-        if (((imageData.data[i] < minForWhite) && (imageData.data[i + 1] < minForWhite) && (imageData.data[i + 2] < minForWhite)) || (imageData.data[i] < maxForBlack) || (imageData.data[i + 1] < maxForBlack) || (imageData.data[i + 3])) {
-            if (((imageData.data[i] / imageData.data[i + 1]) > pctDiff) && ((imageData.data[i] / imageData.data[i + 2]) > pctDiff)) {
-                imageData.data[i] = Math.ceil(imageData.data[i] / range) * range;
-                imageData.data[i + 1] = 0;
-                imageData.data[i + 2] = 0;
-            } else if (((imageData.data[i + 1] / imageData.data[i]) > pctDiff) && ((imageData.data[i + 1] / imageData.data[i + 2]) > pctDiff)) {
-                // green
-                imageData.data[i + 1] = Math.ceil(imageData.data[i + 1] / range) * range;
-                imageData.data[i] = 0;
-                imageData.data[i + 2] = 0;
-            } else if (((imageData.data[i + 2] / imageData.data[i]) > pctDiff) && ((imageData.data[i + 2] / imageData.data[i + 1]) > pctDiff)) {
-                // blue
-                imageData.data[i + 2] = Math.ceil(imageData.data[i + 2] / range) * range;
-                imageData.data[i] = 0;
-                imageData.data[i + 1] = 0;
-            }
-        } else {
-            if ((imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3 > minForWhite) {
-                imageData.data[i] = Math.floor(imageData.data[i] / whiteBlackRange) * whiteBlackRange;
-                imageData.data[i + 1] = Math.floor(imageData.data[i + 1] / whiteBlackRange) * whiteBlackRange;
-                imageData.data[i + 2] = Math.floor(imageData.data[i + 2] / whiteBlackRange) * whiteBlackRange;
-                imageData.data[i + 3] = imageData.data[i + 3]
-            } else {
-                imageData.data[i] = Math.ceil(imageData.data[i] / whiteBlackRange) * whiteBlackRange;
-                imageData.data[i + 1] = Math.ceil(imageData.data[i + 1] / whiteBlackRange) * whiteBlackRange;
-                imageData.data[i + 2] = Math.ceil(imageData.data[i + 2] / whiteBlackRange) * whiteBlackRange;
-                imageData.data[i + 3] = imageData.data[i + 3]
-            }
-        }
-    }
-
-    // overwrite original image
-    context.putImageData(imageData, 0, 0);
-}
 //Extrahera dominerande färg(SLUT)
 
 //En demoapp måste man ju ha, liesom, hallå...
@@ -1269,3 +1218,22 @@ function demo_app() {
     gui.add(options, 'minCornerScoreForStationary', 5, 100).step(1);
 }
 //En demoapp måste man ju ha, liesom, hallå...(SLUT)
+
+//Vafan vi måste ju liesom glo in saker i lugn o (rrrR)(Rrrr)(o )( o)!
+
+
+//Simple button click function to obtain user entry
+function buttonClick() {
+    let canvas = document.getElementById('videoCanvas');
+    let context = canvas.getContext('2d');
+    let canvasBild = document.getElementById('viGlor');
+    let contextBild = canvasBild.getContext('2d');
+
+    let imageData = context.getImageData(0, 0, videoWidth, videoHeight);
+
+    //Write video frame to canvases
+    contextBild.putImageData(imageData, 0, 0);
+}
+  //End simple button click function to obtain user entry
+
+//Vafan vi måste ju liesom glo in saker i lugn o (rrrR)(Rrrr)(o )( o)!(SLUT)

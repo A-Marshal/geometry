@@ -29,7 +29,7 @@
 
     //Event listeners
     document.getElementById('files').addEventListener('change', handleFileSelect, false);
-    document.getElementById('zoomRange').addEventListener('change', handleFileSelect, false);
+    document.getElementById('zoomRange').addEventListener('change', rangeSlideChange, false);
 
 
     //Event functions
@@ -56,6 +56,15 @@
     }
 
     //Nu jumlar nu ska vi möga té en jumla eventhandler, tydligen, istf att röga... jorå
+    function rangeSlideChange(evt) {
+      let zoomFactor = this.value;
+      let cvs = document.getElementById('canvas');
+      let ctx = cvs.getContext('2d');
+      ctx.save();
+      ctx.scale(zoomFactor, zoomFactor);
+      ctx.stroke();
+      ctx.restore();
+    }
     //Nu jumlar nu ska vi möga té en jumla eventhandler, tydligen, istf att röga... jorå(SLUT)
 
     //Function functions
