@@ -521,6 +521,237 @@ function bloodyStupidJohnsonCannyLines0002(ctxx) {
     ctxx.putImageData(imageData, 0, 0);
 }
 
+function bloodyStupidJohnsonCannyLines0003(ctxx) {
+    let img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8C1_t | jsfeat.C1_t);
+    let img_u8Inflection = [];
+
+    let imageData = ctxx.getImageData(0, 0, videoWidth, videoHeight);
+
+    jsfeat.imgproc.grayscale(imageData.data, videoWidth, videoHeight, img_u8);
+
+    let r = 2; //options.blur_radius | 0;
+    let kernel_size = (r + 1) << 1;
+
+    //Initiering av globaler
+    sumCannyX = 0;
+    sumCannyY = 0;
+    maxCannyX = -999;
+    maxCannyY = -999;
+    minCannyX = 999;
+    minCannyY = 999;
+    countCannyROI = 0;
+    countWhiteCannyTot = 0;
+    countWhiteCannyROI = 0;
+
+    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+
+    jsfeat.imgproc.canny(img_u8, img_u8, 20, 50 /* options.low_threshold | 0, options.high_threshold | 0 */);
+
+    // render result back to canvas
+    let data_u32 = new Uint32Array(imageData.data.buffer);
+    let alpha = (0xff << 24);
+    let noImagePix = img_u8.cols * img_u8.rows, row = 0;
+    let pix = 0, pixR = 0, pixB = 0, pixG = 0, pctPartOf = 0.1;
+    //while (--i >= 0) {
+    for (var ii = 0; ii < noImagePix; ii++) {
+        pix = img_u8.data[ii];
+
+        if ((ii != 0) && (ii % 640 == 0)) {
+            row++;
+        }
+
+        if (pix > 0) {
+            //Canny ROI info
+            let xx = ii - row * 640;
+            let yy = row;
+            if (cannyWithinROI(xx, yy)) {
+                sumCannyX += xx;
+                sumCannyY += yy;
+                maxCannyX = Math.max(maxCannyX, xx);
+                maxCannyY = Math.max(maxCannyY, yy);
+                minCannyX = Math.min(minCannyX, xx);
+                minCannyY = Math.min(minCannyY, yy);
+                countCannyROI++;
+            }
+            //Canny ROI info(SLUT)
+
+            //En första liden liden Bloody Stupid Johnson lina
+            //Horisontaler1
+            if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Horisontaler2 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green - TYDLIGEN...
+                //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Horisontaler3 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1 - videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan - TYDLIGEN...
+                //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Horisontaler4 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1 + videoWidth] > 0) && (img_u8.data[ii + 1] > 0)) {
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan - TYDLIGEN...
+                //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Horisontaler5 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + 1] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green - TYDLIGEN...
+                //data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
+                //Vertikaler
+            } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0x00 << 8) | 0xff; //red
+                //Snett upp åt höger1
+            } else if ((img_u8.data[ii + 1 - videoWidth] > 0) && (img_u8.data[ii - 1 + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
+                //Snett upp åt höger2 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii + 1 - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
+                //Snett upp åt höger3 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii - 1 + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0xff << 16) | (0xff << 8) | 0x00; //cyan
+                //Snett upp åt vänster1
+            } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
+                //Snett upp åt vänster2 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
+                //Snett upp åt vänster3 - dessa kan vara intressanta att färga annerledes
+            } else if ((img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
+                data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0x00; //green
+                //Allt annat, kan tas om hand om också... typ palla..., FAST hé é intressante punkte
+            } else {
+                data_u32[ii] = alpha | (pix << 16) | (pix << 8) | pix; //white
+                img_u8Inflection[ii] = 255;
+                countWhiteCannyTot++;
+                if (cannyWithinROI(xx, yy)) {
+                    countWhiteCannyROI++;
+                }
+            }
+            //En första liden liden Bloody Stupid Johnson lina(SLUT)
+        }
+    }
+
+    for (ii = 0; ii < videoWidth * videoHeight; ii++) {
+        //Get the RGB value for colour plane inflection points
+        pixR = imageData.data[ii];
+        pixG = imageData.data[ii + 1];
+        pixB = imageData.data[ii + 2];
+
+
+        if ((ii != 0) && (ii % 640 == 0)) {
+            row++;
+        }
+        //Testa lite grann
+        let upperLeftR = imageData.data[ii - 4 - 4 * videoWidth];
+        let upperLeftG = imageData.data[ii - 4 - 4 * videoWidth + 1];
+        let upperLeftB = imageData.data[ii - 4 - 4 * videoWidth + 2];
+
+        let upperCenterR = imageData.data[ii - 4 * videoWidth];
+        let upperCenterG = imageData.data[ii - 4 * videoWidth + 1];
+        let upperCenterB = imageData.data[ii - 4 * videoWidth + 2];
+
+        let upperRightR = imageData.data[ii + 4 - 4 * videoWidth];
+        let upperRightG = imageData.data[ii + 4 - 4 * videoWidth + 1];
+        let upperRightB = imageData.data[ii + 4 - 4 * videoWidth + 2];
+
+        let centerLeftR = imageData.data[ii - 4];
+        let centerLeftG = imageData.data[ii - 4 + 1];
+        let centerLeftB = imageData.data[ii - 4 + 2];
+
+        let centerRightR = imageData.data[ii + 4];
+        let centerRightG = imageData.data[ii + 4 + 1];
+        let centerRightB = imageData.data[ii + 4 + 2];
+
+        let lowerLeftR = imageData.data[ii - 4 + 4 * videoWidth];
+        let lowerLeftG = imageData.data[ii - 4 + 4 * videoWidth + 1];
+        let lowerLeftB = imageData.data[ii - 4 + 4 * videoWidth + 2];
+
+        let lowerCenterR = imageData.data[ii + 4 * videoWidth];
+        let lowerCenterG = imageData.data[ii + 4 * videoWidth + 1];
+        let lowerCenterB = imageData.data[ii + 4 * videoWidth + 2];
+
+        let lowerRightR = imageData.data[ii + 4 + videoWidth];
+        let lowerRightG = imageData.data[ii + 4 + videoWidth + 1];
+        let lowerRightB = imageData.data[ii + 4 + videoWidth + 2];
+
+        if (img_u8Inflection[ii] > 0) {
+            //Upper left
+            if ((Math.abs(1 - (upperLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (upperLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (upperLeftB / pixB)) > pctPartOf)) {
+                data_u32[ii - 1 - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((upperLeftR / pixR > pctPartOf) && ((upperLeftG / pixG) > pctPartOf) && ((upperLeftB / pixB) > pctPartOf)) {
+                data_u32[ii - 1 - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii - 1 - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Upper center
+            if ((Math.abs(1 - (upperCenterR / pixR)) < pctPartOf) && (Math.abs(1 - (upperCenterG / pixG)) < pctPartOf) && (Math.abs(1 - (upperCenterB / pixB)) > pctPartOf)) {
+                data_u32[ii - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((upperCenterR / pixR > pctPartOf) && ((upperCenterG / pixG) > pctPartOf) && ((upperCenterB / pixB) > pctPartOf)) {
+                data_u32[ii - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Upper right
+            if ((Math.abs(1 - (upperRightR / pixR)) < pctPartOf) && (Math.abs(1 - (upperRightG / pixG)) < pctPartOf) && (Math.abs(1 - (upperRightB / pixB)) > pctPartOf)) {
+                data_u32[ii + 1 - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((upperRightR / pixR > pctPartOf) && ((upperRightG / pixG) > pctPartOf) && ((upperRightB / pixB) > pctPartOf)) {
+                data_u32[ii + 1 - videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii + 1 - videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Center left
+            if ((Math.abs(1 - (centerLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (centerLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (centerLeftB / pixB)) > pctPartOf)) {
+                data_u32[ii - 1] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((centerLeftR / pixR > pctPartOf) && ((centerLeftG / pixG) > pctPartOf) && ((centerLeftB / pixB) > pctPartOf)) {
+                data_u32[ii - 1] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii - 1] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Center right
+            if ((Math.abs(1 - (centerRightR / pixR)) < pctPartOf) && (Math.abs(1 - (centerRightG / pixG)) < pctPartOf) && (Math.abs(1 - (centerRightB / pixB)) > pctPartOf)) {
+                data_u32[ii + 1] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((centerRightR / pixR > pctPartOf) && ((centerRightG / pixG) > pctPartOf) && ((centerRightB / pixB) > pctPartOf)) {
+                data_u32[ii + 1] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii + 1] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+
+            //Lower left
+            if ((Math.abs(1 - (lowerLeftR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerLeftG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerLeftB / pixB)) > pctPartOf)) {
+                data_u32[ii - 1 + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((lowerLeftR / pixR > pctPartOf) && ((lowerLeftG / pixG) > pctPartOf) && ((lowerLeftB / pixB) > pctPartOf)) {
+                data_u32[ii - 1 + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii - 1 + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Lower center
+            if ((Math.abs(1 - (lowerCenterR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerCenterG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerCenterB / pixB)) > pctPartOf)) {
+                data_u32[ii + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((lowerCenterR / pixR > pctPartOf) && ((lowerCenterG / pixG) > pctPartOf) && ((lowerCenterB) / pixB > pctPartOf)) {
+                data_u32[ii + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+
+            //Lower right
+            if ((Math.abs(1 - (lowerRightR / pixR)) < pctPartOf) && (Math.abs(1 - (lowerRightG / pixG)) < pctPartOf) && (Math.abs(1 - (lowerRightB / pixB)) > pctPartOf)) {
+                data_u32[ii + 1 + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else if ((lowerRightR / pixR > pctPartOf) && ((lowerRightG / pixG) > pctPartOf) && ((lowerRightB / pixB) > pctPartOf)) {
+                data_u32[ii + 1 + videoWidth] = alpha | (0xff << 16) | (0xff << 8) | 0xff; //white
+            } else {
+                data_u32[ii + 1 + videoWidth] = alpha | (0x00 << 16) | (0x00 << 8) | 0x00; //black
+            }
+            //Testa lite grann(SLUT)
+        }
+    }
+
+    ctxx.putImageData(imageData, 0, 0);
+}
+
 //Är en corner pixel inom ROI?
 function cannyWithinROI(x, y) {
     let isWithin = false;
@@ -1224,38 +1455,44 @@ function demo_app() {
 
 //Simple button click function to obtain user entry
 function buttonClick() {
-    let canvas = document.getElementById('videoCanvas');
-    let context = canvas.getContext('2d');
     let canvasBild = document.getElementById('viGlor');
     let contextBild = canvasBild.getContext('2d');
     let canvasBildOrig = document.getElementById('viGlorOrig');
     let contextBildOrig = canvasBildOrig.getContext('2d');
-
-    let imageData = context.getImageData(0, 0, videoWidth, videoHeight);
-
-    //Write video frame to canvases
-    contextBildOrig.drawImage(video, 0, 0, 640, 480);
-    contextBild.putImageData(imageData, 0, 0);
+    let canvasMellan = document.getElementById('mellanLager');
+    let contextMellan = canvasMellan.getContext('2d');
 
     //Vi mögar ännu mer
 
     // Canvas and Images 
-    var canvas1 = document.getElementById("canvas_1");
-    var context1 = canvas1.getContext('2d');
-    var canvas2 = document.getElementById("canvas_2");
-    var context2 = canvas2.getContext('2d');
-    var canvas3 = document.getElementById("canvas_3");
-    var context3 = canvas3.getContext('2d');
-    var canvas4 = document.getElementById("canvas_4");
-    var context4 = canvas4.getContext('2d');
+    let canvas1 = document.getElementById("canvas_1");
+    let context1 = canvas1.getContext('2d');
+    let canvas2 = document.getElementById("canvas_2");
+    let context2 = canvas2.getContext('2d');
+    let canvas3 = document.getElementById("canvas_3");
+    let context3 = canvas3.getContext('2d');
+    let canvas4 = document.getElementById("canvas_4");
+    let context4 = canvas4.getContext('2d');
+
+    //Write video frame to canvases
+    contextMellan.drawImage(video, 0, 0, 640, 480);
+
+    contextBildOrig.drawImage(canvasMellan, 0, 0, 640, 480);
+    contextBild.drawImage(canvasMellan, 0, 0, 640, 480);
+    
+    context1.drawImage(canvasMellan, 0, 0, 640, 480);
+    context2.drawImage(canvasMellan, 0, 0, 640, 480);
+
+    context3.drawImage(canvasMellan, 0, 0, 640, 480); //Original image
+    context4.drawImage(canvasMellan, 0, 0, 640, 480); //Original image
+
+    bloodyStupidJohnsonCannyLines0002(contextBild);
+    drawFastPoints(contextMellan, contextBild);
+    extractMajorColour(contextBild);
 
     //Lide mer i glo på
-    context1.drawImage(video, 0, 0, 640, 480); //Original image
-    context2.drawImage(video, 0, 0, 640, 480); //Original image
-    drawFastPoints(context1,context2);
-    context3.drawImage(video, 0, 0, 640, 480); //Original image
-    context4.drawImage(video, 0, 0, 640, 480); //Original image
-    bloodyStupidJohnsonCannyLines0002(context4);
+    drawFastPoints(context1, context2);
+    bloodyStupidJohnsonCannyLines0003(context4);
     //Vi mögar ännu mer(SLUT)
 }
   //End simple button click function to obtain user entry
