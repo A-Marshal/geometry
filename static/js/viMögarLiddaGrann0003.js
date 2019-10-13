@@ -1236,6 +1236,27 @@ function buttonClick() {
     //Write video frame to canvases
     contextBildOrig.drawImage(video, 0, 0, 640, 480);
     contextBild.putImageData(imageData, 0, 0);
+
+    //Vi mögar ännu mer
+
+    // Canvas and Images 
+    var canvas1 = document.getElementById("canvas_1");
+    var context1 = canvas1.getContext('2d');
+    var canvas2 = document.getElementById("canvas_2");
+    var context2 = canvas2.getContext('2d');
+    var canvas3 = document.getElementById("canvas_3");
+    var context3 = canvas3.getContext('2d');
+    var canvas4 = document.getElementById("canvas_4");
+    var context4 = canvas4.getContext('2d');
+
+    //Lide mer i glo på
+    context1.drawImage(video, 0, 0, 640, 480); //Original image
+    context2.drawImage(video, 0, 0, 640, 480); //Original image
+    drawFastPoints(context1,context2);
+    context3.drawImage(video, 0, 0, 640, 480); //Original image
+    context4.drawImage(video, 0, 0, 640, 480); //Original image
+    bloodyStupidJohnsonCannyLines0002(context4);
+    //Vi mögar ännu mer(SLUT)
 }
   //End simple button click function to obtain user entry
 

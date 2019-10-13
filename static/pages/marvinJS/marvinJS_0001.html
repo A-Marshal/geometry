@@ -125,7 +125,7 @@
       for (var i in segments) {
         var seg = segments[i];
         // Skip segments that are too small
-        if (seg.height >= 3) {
+        if (seg.height >= 4) {
           image.drawRect(seg.x1, seg.y1 - 5, seg.width, seg.height + 10, 0xFFFF0000);
           image.drawRect(seg.x1 + 1, seg.y1 - 4, seg.width - 2, seg.height + 8, 0xFFFF0000);
         }
