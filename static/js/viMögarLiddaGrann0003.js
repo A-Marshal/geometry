@@ -113,18 +113,18 @@ let roiWidth, roiHeight, roiX0, roiY0, minCornerScoreForStationary;
 let gui, options;
 
 let demo_opt = function () {
-    this.roiWidth = 485;
-    this.roiHeight = 229;
-    this.roiX0 = 98;
-    this.roiY0 = 58;
+    this.roiWidth = 638;
+    this.roiHeight = 478;
+    this.roiX0 = 1;
+    this.roiY0 = 1;
     this.minCornerScoreForStationary = 50;
 }
 
 //Förinställt gör livet enklare att hitta tv'n blann annet.
-roiWidth = 485;
-roiHeight = 229;
-roiX0 = 98;
-roiY0 = 58;
+roiWidth = 638;
+roiHeight = 478;
+roiX0 = 1;
+roiY0 = 1;
 minCornerScoreForStationary = 50;
 
 //Mina variabler för att särskilja stationära vs icke - stationära FAST
@@ -545,7 +545,7 @@ function bloodyStupidJohnsonCannyLines0003(ctxx) {
 
     jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
 
-    jsfeat.imgproc.canny(img_u8, img_u8, 20, 50 /* options.low_threshold | 0, options.high_threshold | 0 */);
+    jsfeat.imgproc.canny(img_u8, img_u8, 10, 30 /* options.low_threshold | 0, options.high_threshold | 0 */);
 
     // render result back to canvas
     let data_u32 = new Uint32Array(imageData.data.buffer);
@@ -1311,6 +1311,452 @@ function drawFastPoints(ctxVideo, ctxCanvas) {
     nåtSkit.innerHTML += "<br>FAST point count, low th: " + countLowTh;
 }
 
+function drawFastPoints0002(ctxVideo, ctxCanvas) {
+    let imageData = ctxVideo.getImageData(0, 0, videoWidth, videoHeight);
+    let imageDataCanvas = ctxCanvas.getImageData(0, 0, videoWidth, videoHeight);
+    let img_u8 = new jsfeat.matrix_t(videoWidth, videoHeight, jsfeat.U8_t | jsfeat.C1_t);
+    let threshold = 14;
+    let frameBoolean = false;
+
+    //Set FAST corners threshold
+    jsfeat.fast_corners.set_threshold(threshold);
+
+    //Den här ska vi möge té själve, vi har liesom en fan så möge bättre algo
+    jsfeat.imgproc.grayscale(imageData.data, videoWidth, videoHeight, img_u8);
+
+    //Här mögas då FAST punkterna té, corners fylls o vi erhåller count
+    let countTot = jsfeat.fast_corners.detect(img_u8, corners, 5);
+    //Variabler för antal FAST punkter i de olika fokusareorna
+    let countHiTh = 0;
+    let countMidTh = 0;
+    let countLowTh = 0;
+
+    //Variabler för antal FAST punkter i de olika fokusarerornas kvadranter
+    let countLowThQ = [];
+    let countMidThQ = [];
+    let countHiThQ = [];
+
+    //Initiera variabler för fokusareor
+    sumTotalX = 0;
+    sumTotalY = 0;
+    sumLowThX = 0;
+    sumLowThY = 0;
+    sumMidThX = 0;
+    sumMidThY = 0;
+    sumHiThX = 0;
+    sumHiThY = 0;
+    maxTotalX = -999;
+    minTotalX = 999;
+    maxTotalY = -999;
+    minTotalY = 999;
+    maxLowThX = -999;
+    minLowThX = 999;
+    maxLowThY = -999;
+    minLowThY = 999;
+    maxMidThX = -999;
+    minMidThX = 999;
+    maxMidThY = -999;
+    minMidThY = 999;
+    maxHiThX = -999;
+    minHiThX = 999;
+    maxHiThY = -999;
+    minHiThY = 999;
+    //Initiera variabler för fokusareor(SLUT)
+
+    //Initiera max, min corner score
+    maxCornersScore = -999;
+    minCornersScore = 999;
+    //Initiera max, min corner score(SLUT)
+
+    //Initiera variabler för fokusareors kvadranter, röd
+    sumLowThXQ = [0, 0, 0, 0, 0];
+    sumLowThYQ = [0, 0, 0, 0, 0];
+    maxLowThXQ = [-999, -999, -999, -999, -999];
+    minLowThXQ = [999, 999, 999, 999, 999];
+    maxLowThYQ = [-999, -999, -999, -999, -999];
+    minLowThYQ = [999, 999, 999, 999, 999];
+    //Initiera variabler för fokusareors kvadranter, röd(SLUT)
+
+    //Initiera variabler för fokusareors kvadranter, grön
+    sumMidThXQ = [0, 0, 0, 0, 0];
+    sumMidThYQ = [0, 0, 0, 0, 0];
+    maxMidThXQ = [-999, -999, -999, -999, -999];
+    minMidThXQ = [999, 999, 999, 999, 999];
+    maxMidThYQ = [-999, -999, -999, -999, -999];
+    minMidThYQ = [999, 999, 999, 999, 999];
+    //Initiera variabler för fokusareors kvadranter, grön(SLUT)
+
+    //Initiera variabler för fokusareors kvadranter, blå
+    sumHiThXQ = [0, 0, 0, 0, 0];
+    sumHiThYQ = [0, 0, 0, 0, 0];
+    maxHiThXQ = [-999, -999, -999, -999, -999];
+    minHiThXQ = [999, 999, 999, 999, 999];
+    maxHiThYQ = [-999, -999, -999, -999, -999];
+    minHiThYQ = [999, 999, 999, 999, 999];
+    //Initiera variabler för fokusareors kvadranter, blå(SLUT)
+
+    countLowThQ = [0, 0, 0, 0, 0];
+    countMidThQ = [0, 0, 0, 0, 0];
+    countHiThQ = [0, 0, 0, 0, 0];
+
+    /*****************************************************/
+    /************Själve fonktionaliteta börjer ***********/
+    /*****************************************************/
+
+    for (var i = 0; i < videoWidth * videoHeight; i++) {
+        if (cornersStationary[i] > 0)
+            cornersStationary[i]--;
+    }
+
+    //Fokusareor i bilden
+    for (var i = 0; i < countTot; i++) {
+        //Erhåll fokusareor
+        if ((withinROI(i))) {
+            sumTotalX += corners[i].x;
+            sumTotalY += corners[i].y;
+            maxTotalX = Math.max(maxTotalX, corners[i].x);
+            maxTotalY = Math.max(maxTotalY, corners[i].y);
+            minTotalX = Math.min(minTotalX, corners[i].x);
+            minTotalY = Math.min(minTotalY, corners[i].y);
+            maxCornersScore = Math.max(maxCornersScore, corners[i].score);
+            minCornersScore = Math.min(minCornersScore, corners[i].score);
+            if ((corners[i].score > 20) && (corners[i].score < 40)) {
+                sumLowThX += corners[i].x;
+                sumLowThY += corners[i].y;
+                maxLowThX = Math.max(maxLowThX, corners[i].x);
+                maxLowThY = Math.max(maxLowThY, corners[i].y);
+                minLowThX = Math.min(minLowThX, corners[i].x);
+                minLowThY = Math.min(minLowThY, corners[i].y);
+                countLowTh++;
+
+            } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
+                sumMidThX += corners[i].x;
+                sumMidThY += corners[i].y;
+                maxMidThX = Math.max(maxMidThX, corners[i].x);
+                maxMidThY = Math.max(maxMidThY, corners[i].y);
+                minMidThX = Math.min(minMidThX, corners[i].x);
+                minMidThY = Math.min(minMidThY, corners[i].y);
+                countMidTh++;
+            } else if (corners[i].score > 61) {
+                sumHiThX += corners[i].x;
+                sumHiThY += corners[i].y;
+                maxHiThX = Math.max(maxHiThX, corners[i].x);
+                maxHiThY = Math.max(maxHiThY, corners[i].y);
+                minHiThX = Math.min(minHiThX, corners[i].x);
+                minHiThY = Math.min(minHiThY, corners[i].y);
+                countHiTh++;
+            }
+        }
+    }
+
+    //Uppdatera allThZero för att kolla av om vi ska glo in dåliga
+    //FAST punkter etc eller ej
+    if (countHiTh == 0 && countMidTh == 0 && countLowTh == 0) {
+        allThZero = true;
+    } else {
+        allThZero = false;
+    }
+
+    //Räkna ut geo. medelvärden för fokusareornas kvadranter
+    for (var i = 0; i < countTot; i++) {
+        //Erhåll fokusareor
+        if ((withinROI(i))) {
+            var quadrant;
+
+            if ((corners[i].score > 20) && (corners[i].score < 40)) {
+                quadrant = obtainRedQuadrant(i);
+                sumLowThXQ[quadrant] += corners[i].x;
+                sumLowThYQ[quadrant] += corners[i].y;
+                maxLowThXQ[quadrant] = Math.max(maxLowThXQ[quadrant], corners[i].x);
+                maxLowThYQ[quadrant] = Math.max(maxLowThYQ[quadrant], corners[i].y);
+                minLowThXQ[quadrant] = Math.min(minLowThXQ[quadrant], corners[i].x);
+                minLowThYQ[quadrant] = Math.min(minLowThYQ[quadrant], corners[i].y);
+                countLowThQ[quadrant] += 1;
+
+            } else if ((corners[i].score > 41) && (corners[i].score < 60)) {
+                quadrant = obtainGreenQuadrant(i);
+                sumMidThXQ[quadrant] += corners[i].x;
+                sumMidThYQ[quadrant] += corners[i].y;
+                maxMidThXQ[quadrant] = Math.max(maxMidThXQ[quadrant], corners[i].x);
+                maxMidThYQ[quadrant] = Math.max(maxMidThYQ[quadrant], corners[i].y);
+                minMidThXQ[quadrant] = Math.min(minMidThXQ[quadrant], corners[i].x);
+                minMidThYQ[quadrant] = Math.min(minMidThYQ[quadrant], corners[i].y);
+                countMidThQ[quadrant] += 1;
+            } else if (corners[i].score > 61) {
+                quadrant = obtainBlueQuadrant(i);
+                sumHiThXQ[quadrant] += corners[i].x;
+                sumHiThYQ[quadrant] += corners[i].y;
+                maxHiThXQ[quadrant] = Math.max(maxHiThXQ[quadrant], corners[i].x);
+                maxHiThYQ[quadrant] = Math.max(maxHiThYQ[quadrant], corners[i].y);
+                minHiThXQ[quadrant] = Math.min(minHiThXQ[quadrant], corners[i].x);
+                minHiThYQ[quadrant] = Math.min(minHiThYQ[quadrant], corners[i].y);
+                countHiThQ[quadrant] += 1;
+            }
+        }
+    }
+    //Räkna ut geo. medelvärden för fokusareornas kvadranter(SLUT)
+
+    // render result back to canvas
+    let data_u32 = new Uint32Array(imageDataCanvas.data.buffer);
+
+    //render_corners(corners, countTot, data_u32, videoWidth);
+
+    render_corners2(corners, cornersStationary, countTot, countHiTh, countMidTh, countLowTh, data_u32, videoWidth);
+
+    ctxCanvas.putImageData(imageDataCanvas, 0, 0);
+
+    //Ett område, 3 x 3 px stort, fylls med stationaryCornerHitVal
+    //i cornersStationaryarrayen för varje FAST punkt i corners
+    //senare sorteras punkter efter FAST score
+    for (var i = 0; i < countTot; i++) {
+        let x = corners[i].x;
+        let y = corners[i].y;
+        let off = (x + y * videoWidth);
+        cornersStationary[off] = stationaryCornerHitVal;
+        cornersStationary[off - 1] = stationaryCornerHitVal;
+        cornersStationary[off + 1] = stationaryCornerHitVal;
+        cornersStationary[off - videoWidth] = stationaryCornerHitVal;
+        cornersStationary[off - videoWidth - 1] = stationaryCornerHitVal;
+        cornersStationary[off - videoWidth + 1] = stationaryCornerHitVal;
+        cornersStationary[off + videoWidth] = stationaryCornerHitVal;
+        cornersStationary[off + videoWidth - 1] = stationaryCornerHitVal;
+        cornersStationary[off + videoWidth + 1] = stationaryCornerHitVal;
+    }
+
+    //Här ridas då infon ud
+    if (countTot > 2) {
+        sumTotalX /= countTot;
+        sumTotalY /= countTot;
+    }
+    if (countLowTh > 2) {
+        sumLowThX /= countLowTh;
+        sumLowThY /= countLowTh;
+
+        //Räkna ut centrum för geometriska medelvärden i kvadranterna
+        for (var i = 0; i < 4; i++) {
+            sumLowThXQ[i] /= countLowThQ[i];
+            sumLowThYQ[i] /= countLowThQ[i];
+        }
+
+        if (frameBoolean) {
+            // Red rectangle
+            ctxCanvas.beginPath();
+            ctxCanvas.lineWidth = "2";
+            ctxCanvas.strokeStyle = "red";
+            ctxCanvas.rect(minLowThX, minLowThY, (maxLowThX - minLowThX), (maxLowThY - minLowThY));
+            ctxCanvas.stroke();
+            //Röda rektangelns centerlijer
+            ctxCanvas.beginPath();
+            ctxCanvas.moveTo((minLowThX + (maxLowThX - minLowThX) / 2), minLowThY);
+            ctxCanvas.lineTo((minLowThX + (maxLowThX - minLowThX) / 2), maxLowThY);
+            ctxCanvas.stroke();
+            ctxCanvas.beginPath();
+            ctxCanvas.moveTo(minLowThX, (minLowThY + (maxLowThY - minLowThY) / 2));
+            ctxCanvas.lineTo(maxLowThX, (minLowThY + (maxLowThY - minLowThY) / 2));
+            ctxCanvas.stroke();
+            //Röda rektangelns centerlijer(SLUT)
+            ctxCanvas.beginPath();
+            ctxCanvas.arc(sumLowThX, sumLowThY, 8, 0, 2 * Math.PI);
+            ctxCanvas.stroke();
+            ctxCanvas.beginPath();
+            ctxCanvas.strokeStyle = "#FFAAAA"
+            ctxCanvas.arc(sumLowThXPrev, sumLowThYPrev, 8, 0, 2 * Math.PI);
+            ctxCanvas.stroke();
+        }
+    }
+    if (countMidTh > 2) {
+        sumMidThX /= countMidTh;
+        sumMidThY /= countMidTh;
+
+        //Räkna ut centrum för geometriska medelvärden i kvadranterna
+        for (var i = 0; i < 4; i++) {
+            sumMidThXQ[i] /= countMidThQ[i];
+            sumMidThYQ[i] /= countMidThQ[i];
+        }
+        if (frameBoolean) {
+            // Green rectangle
+            ctxCanvas.beginPath();
+            ctxCanvas.strokeStyle = "limegreen";
+            ctxCanvas.rect(minMidThX, minMidThY, (maxMidThX - minMidThX), (maxMidThY - minMidThY));
+            ctxCanvas.stroke();
+            //Gröna rektangelns centerlijer
+            ctxCanvas.beginPath();
+            ctxCanvas.moveTo((minMidThX + (maxMidThX - minMidThX) / 2), minMidThY);
+            ctxCanvas.lineTo((minMidThX + (maxMidThX - minMidThX) / 2), maxMidThY);
+            ctxCanvas.stroke();
+            ctxCanvas.beginPath();
+            ctxCanvas.moveTo(minMidThX, (minMidThY + (maxMidThY - minMidThY) / 2));
+            ctxCanvas.lineTo(maxMidThX, (minMidThY + (maxMidThY - minMidThY) / 2));
+            ctxCanvas.stroke();
+            //Gröna rektangelns centerlijer(SLUT)
+            ctxCanvas.beginPath();
+            ctxCanvas.arc(sumMidThX, sumMidThY, 8, 0, 2 * Math.PI);
+            ctxCanvas.stroke();
+            ctxCanvas.beginPath();
+            ctxCanvas.strokeStyle = "#AAFFAA"
+            ctxCanvas.arc(sumMidThXPrev, sumMidThYPrev, 8, 0, 2 * Math.PI);
+            ctxCanvas.stroke();
+        }
+    }
+
+    if (countHiTh > 2) {
+        sumHiThX /= countHiTh;
+        sumHiThY /= countHiTh;
+
+        //Räkna ut centrum för geometriska medelvärden i kvadranterna
+        for (var i = 0; i < 4; i++) {
+            sumHiThXQ[i] /= countHiThQ[i];
+            sumHiThYQ[i] /= countHiThQ[i];
+        }
+
+        if (frameBoolean) {
+            // Blue rectangle
+            ctxCanvas.beginPath();
+            ctxCanvas.strokeStyle = "blue";
+            ctxCanvas.rect(minHiThX, minHiThY, (maxHiThX - minHiThX), (maxHiThY - minHiThY));
+            ctxCanvas.stroke();
+            //Blåa rektangelns centerlijer
+            ctxCanvas.beginPath();
+            ctxCanvas.moveTo((minHiThX + (maxHiThX - minHiThX) / 2), minHiThY);
+            ctxCanvas.lineTo((minHiThX + (maxHiThX - minHiThX) / 2), maxHiThY);
+            ctxCanvas.stroke();
+            ctxCanvas.beginPath();
+            ctxCanvas.moveTo(minHiThX, (minHiThY + (maxHiThY - minHiThY) / 2));
+            ctxCanvas.lineTo(maxHiThX, (minHiThY + (maxHiThY - minHiThY) / 2));
+            ctxCanvas.stroke();
+            //Blåa rektangelns centerlijer(SLUT)
+            ctxCanvas.beginPath();
+            ctxCanvas.arc(sumHiThX, sumHiThY, 8, 0, 2 * Math.PI);
+            ctxCanvas.stroke();
+            ctxCanvas.beginPath();
+            ctxCanvas.strokeStyle = "#AAAAFF"
+            ctxCanvas.arc(sumHiThXPrev, sumHiThYPrev, 8, 0, 2 * Math.PI);
+            ctxCanvas.stroke();
+        }
+    }
+    //ROI rectangle
+    ctxCanvas.beginPath();
+    ctxCanvas.lineWidth = "1";
+    ctxCanvas.strokeStyle = "white";
+    ctxCanvas.rect(options.roiX0 + moveROIX, options.roiY0 + moveROIY, options.roiWidth, options.roiHeight);
+    ctxCanvas.stroke();
+
+    //I det fall vi har dålig bildkvalité, d v s inga FAST punkter pga
+    //ur fokus, mörkt, väldigt ljust, grått, utsmeta, vadsomhelst
+    //då visar vi lila rektangel kring canny linjerna, om sådana finnes
+    if (countCannyROI > 2) {
+        sumCannyX /= countCannyROI;
+        sumCannyY /= countCannyROI;
+
+        if (frameBoolean) {
+            // Purple rectangle
+            ctxCanvas.beginPath();
+            ctxCanvas.strokeStyle = "fuchsia";
+            ctxCanvas.rect(minCannyX, minCannyY, (maxCannyX - minCannyX), (maxCannyY - minCannyY));
+            ctxCanvas.stroke();
+            //Lila rektangelns centerlijer
+            ctxCanvas.beginPath();
+            ctxCanvas.moveTo((minCannyX + (maxCannyX - minCannyX) / 2), minCannyY);
+            ctxCanvas.lineTo((minCannyX + (maxCannyX - minCannyX) / 2), maxCannyY);
+            ctxCanvas.stroke();
+            ctxCanvas.beginPath();
+            ctxCanvas.moveTo(minCannyX, (minCannyY + (maxCannyY - minCannyY) / 2));
+            ctxCanvas.lineTo(maxCannyX, (minCannyY + (maxCannyY - minCannyY) / 2));
+            ctxCanvas.stroke();
+            //Blåa rektangelns centerlijer(SLUT)
+            ctxCanvas.beginPath();
+            ctxCanvas.arc(sumCannyX, sumCannyY, 8, 0, 2 * Math.PI);
+            ctxCanvas.stroke();
+            ctxCanvas.beginPath();
+        }
+    }
+    //I det fall vi har dålig bildkvalité, d v s inga FAST punkter pga(SLUT)
+    //ur fokus, mörkt, väldigt ljust, grått, utsmeta, vadsomhelst(SLUT)
+    //då visar vi lila rektangel kring canny linjerna, om sådana finnes(SLUT)
+
+    //Update frame geometry variables
+    sumLowThXPrev = sumLowThX;
+    sumLowThYPrev = sumLowThY;
+    sumMidThXPrev = sumMidThX;
+    sumMidThYPrev = sumMidThY;
+    sumHiThXPrev = sumHiThX;
+    sumHiThYPrev = sumHiThY;
+    minLowThXPrev = minLowThX;
+    maxLowThXPrev = maxLowThX;
+    minLowThYPrev = minLowThY;
+    maxLowThYPrev = maxLowThY;
+    minMidThXPrev = minMidThX;
+    maxMidThXPrev = maxMidThX;
+    minMidThYPrev = minMidThY;
+    maxMidThYPrev = maxMidThY;
+    //Update frame geometry variables(SLUT)
+
+    //Update frame quadrant geometry variables
+    for (var i = 0; i < 4; i++) {
+        sumLowThXQPrev[i] = sumLowThXQ[i];
+        sumLowThYQPrev[i] = sumLowThYQ[i];
+    }
+    //Update frame quadrant geometry variables(SLUT)
+
+    //Update frame quadrant geometry variables
+    for (var i = 0; i < 4; i++) {
+        sumMidThXQPrev[i] = sumMidThXQ[i];
+        sumMidThYQPrev[i] = sumMidThYQ[i];
+    }
+    //Update frame quadrant geometry variables(SLUT)
+
+    //Update frame quadrant geometry variables
+    for (var i = 0; i < 4; i++) {
+        sumHiThXQPrev[i] = sumHiThXQ[i];
+        sumHiThYQPrev[i] = sumHiThYQ[i];
+    }
+    //Update frame quadrant geometry variables(SLUT)
+
+    /*
+    //Nu jävlar i min lilla låda, liesom rörendes ROI
+    sumROIX = (sumHiThX + sumMidThX + sumLowThX) / 3;
+    sumROIXPrev = (sumHiThXPrev + sumMidThXPrev + sumLowThXPrev) / 3;
+    sumROIY = (sumHiThY + sumMidThY + sumLowThY) / 3;
+    sumROIYPrev = (sumHiThYPrev + sumMidThYPrev + sumLowThYPrev) / 3;
+
+    if ((countHiTh != 0) && (countMidTh != 0) && (countLowTh != 0)) {
+        moveROIX = sumROIX - 320;
+        if ((options.roiX0 + moveROIX < 10) || (options.roiX0 + moveROIX > 560)) {
+            moveROIX = 0;
+        }
+
+        moveROIY = sumROIY - 240;
+        if ((options.roiY0 + moveROIY < 10) || (options.roiY0 + moveROIY > 420)) {
+            moveROIY = 0;
+        }
+
+        sumROIXPrev = sumROIX;
+        sumROIYPrev = sumROIY;
+    }
+
+    if ((countHiTh = 0) && (countMidTh = 0) && (countLowTh = 0)) {
+        countZeroFrames++;
+    }
+
+    //Om vi fastnar i ett område utan FAST stannar vi ju kvar om vi
+    //inte räknar o nollställer efter x frames utan någeting
+    if (countZeroFrames > 2) {
+        moveROIX = 0;
+        moveROIY = 0;
+    }
+    //Nu jävlar i min lilla låda, liesom rörendes ROI(SLUT)
+    */
+
+    //Kolla av vad som skerkod
+    let nåtSkit = document.getElementById("count");
+
+    nåtSkit.innerHTML = "FAST point count, tot: " + countTot;
+    nåtSkit.innerHTML += "<br>FAST point count, unused: " + (countTot - countHiTh - countMidTh - countLowTh);
+    nåtSkit.innerHTML += "<br>FAST point count, hi th: " + countHiTh;
+    nåtSkit.innerHTML += "<br>FAST point count, mid th: " + countMidTh;
+    nåtSkit.innerHTML += "<br>FAST point count, low th: " + countLowTh;
+}
+
 function render_corners(corners, count, img, step) {
     let pix = (0xff << 24) | (0x00 << 16) | (0xff << 8) | 0x00;
     for (let i = 0; i < count; ++i) {
@@ -1478,6 +1924,9 @@ function buttonClick() {
 
     //Write video frame to canvases
     contextMellan.drawImage(video, 0, 0, 640, 480);
+    let imageDataFrame = contextMellan.getImageData(0, 0, videoWidth, videoHeight);
+    contextMellan.putImageData(imageDataFrame, 0, 0);
+
 
     contextBildOrig.drawImage(canvasMellan, 0, 0, 640, 480);
     contextBild.drawImage(canvasMellan, 0, 0, 640, 480);
@@ -1486,16 +1935,17 @@ function buttonClick() {
     context1.drawImage(canvasMellan, 0, 0, 640, 480);
     context2.drawImage(canvasMellan, 0, 0, 640, 480);
     context_2_Mellan.drawImage(canvasMellan, 0, 0, 640, 480);
-    drawFastPoints(context_2_Mellan, context2);
+    //Andra raden råa FAST punkta uden rektanglene
+    drawFastPoints0002(context_2_Mellan, context2);
 
-    context3.drawImage(canvasMellan, 0, 0, 640, 480); //Original image
-    context4.drawImage(canvasMellan, 0, 0, 640, 480); //Original image
+    context3.drawImage(canvasMellan, 0, 0, 640, 480);
+    context4.drawImage(canvasMellan, 0, 0, 640, 480);
 
+    //Första raden liesom preces som vi måler video canvas
     bloodyStupidJohnsonCannyLines0002(contextBild);
     drawFastPoints(contextMellan, contextBild);
     extractMajorColour(contextBild);
-
-    //Avesluteningavis, lite BSJ
+    //Tredje raden råa, lide känsliggare, CANNY linjer mé lidda témögede vide punkta
     bloodyStupidJohnsonCannyLines0003(context4);
 }
   //End simple button click function to obtain user entry
