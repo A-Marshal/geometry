@@ -1469,6 +1469,8 @@ function buttonClick() {
     let context1 = canvas1.getContext('2d');
     let canvas2 = document.getElementById("canvas_2");
     let context2 = canvas2.getContext('2d');
+    let canvas_2_Mellan = document.getElementById("canvas_2_Mellan");
+    let context_2_Mellan = canvas_2_Mellan.getContext('2d');
     let canvas3 = document.getElementById("canvas_3");
     let context3 = canvas3.getContext('2d');
     let canvas4 = document.getElementById("canvas_4");
@@ -1479,9 +1481,12 @@ function buttonClick() {
 
     contextBildOrig.drawImage(canvasMellan, 0, 0, 640, 480);
     contextBild.drawImage(canvasMellan, 0, 0, 640, 480);
-    
+
+    //FAST "måste" räknas först??? Varför?
     context1.drawImage(canvasMellan, 0, 0, 640, 480);
     context2.drawImage(canvasMellan, 0, 0, 640, 480);
+    context_2_Mellan.drawImage(canvasMellan, 0, 0, 640, 480);
+    drawFastPoints(context_2_Mellan, context2);
 
     context3.drawImage(canvasMellan, 0, 0, 640, 480); //Original image
     context4.drawImage(canvasMellan, 0, 0, 640, 480); //Original image
@@ -1490,11 +1495,8 @@ function buttonClick() {
     drawFastPoints(contextMellan, contextBild);
     extractMajorColour(contextBild);
 
-    //Lide mer i glo på
-    contextMellan.drawImage(video, 0, 0, 640, 480);
-    drawFastPoints(contextMellan, context2);
+    //Avesluteningavis, lite BSJ
     bloodyStupidJohnsonCannyLines0003(context4);
-    //Vi mögar ännu mer(SLUT)
 }
   //End simple button click function to obtain user entry
 
