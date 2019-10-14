@@ -1491,7 +1491,8 @@ function buttonClick() {
     extractMajorColour(contextBild);
 
     //Lide mer i glo på
-    drawFastPoints(context1, context2);
+    contextMellan.drawImage(video, 0, 0, 640, 480);
+    drawFastPoints(contextMellan, context2);
     bloodyStupidJohnsonCannyLines0003(context4);
     //Vi mögar ännu mer(SLUT)
 }
