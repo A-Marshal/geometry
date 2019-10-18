@@ -158,7 +158,7 @@ function canvasVideoFeed(imageObj) {
     let innanMitt, efterMitt;
     innanMitt = Date.now();
     //drawCannyLines(context, allThZero);
-    bloodyStupidJohnsonCannyLines0002(context);
+    bloodyStupidJohnsonCannyLines0004(context, 30, 50);
     drawFastPoints(contextMellan, context);
     extractMajorColour(context);
     efterMitt = Date.now();
@@ -895,7 +895,7 @@ function bloodyStupidJohnsonCannyLines0004(ctxx, lowThresh, highThresh) {
 
             //En första liden liden Bloody Stupid Johnson lina
             //Horisontaler
-            if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1] > 0)) {
+            if ((img_u8.data[ii - 1] > 0) && (img_u8.data[ii + 1] > 0) && (img_u8.data[ii - 1 - videoWidth] == 0) && (img_u8.data[ii - videoWidth] == 0) && (img_u8.data[ii + 1 - videoWidth] == 0) && (img_u8.data[ii - 1 + videoWidth] == 0) && (img_u8.data[ii + videoWidth] == 0) && (img_u8.data[ii + 1 + videoWidth] == 0)) {
                 data_u32[ii] = alpha | (0x00 << 16) | (0xff << 8) | 0xff; //yellow
                 //Hörnpunkt1
             } else if ((img_u8.data[ii - 1 - videoWidth] > 0) && (img_u8.data[ii - 1] > 0) && (img_u8.data[ii + videoWidth] > 0) && (img_u8.data[ii + 1 + videoWidth] > 0)) {
@@ -906,7 +906,7 @@ function bloodyStupidJohnsonCannyLines0004(ctxx, lowThresh, highThresh) {
                     countWhiteCannyROI++;
                 }
                 //Hörnpunkt2
-            }else if ((img_u8.data[ii - 1 + videoWidth] > 0) && (img_u8.data[ii + videoWidth] > 0) && (img_u8.data[ii + 1] > 0) && (img_u8.data[ii + 1 - videoWidth] > 0)) {
+            } else if ((img_u8.data[ii - 1 + videoWidth] > 0) && (img_u8.data[ii - 1] > 0) && (img_u8.data[ii - videoWidth] > 0) && (img_u8.data[ii + 1 - videoWidth] > 0)) {
                 data_u32[ii] = alpha | (0xff << 16) | (0x00 << 8) | 0xaa; //LILA
                 img_u8Inflection[ii] = 127; //KOLLA AV!!
                 countWhiteCannyTot++;
@@ -1168,7 +1168,6 @@ function bloodyStupidJohnsonCannyLines0004(ctxx, lowThresh, highThresh) {
 
     ctxx.putImageData(imageData, 0, 0);
 }
-
 //Är en corner pixel inom ROI?
 function cannyWithinROI(x, y) {
     let isWithin = false;
